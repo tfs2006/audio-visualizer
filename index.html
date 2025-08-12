@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Visualizer Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        #visualizerCanvas {
+            aspect-ratio: 16 / 9;
+            width: 100%;
+            height: auto;
+        }
+        .btn {
+            @apply w-full sm:w-auto text-white font-bold py-3 px-8 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-4xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold tracking-tight text-white sm:text-5xl">Audio Visualizer Generator</h1>
+            <p class="mt-4 text-lg text-gray-400">Create multiple video clips from a single audio file.</p>
+        </header>
+
+        <main class="bg-gray-800 rounded-xl shadow-2xl p-6 md:p-8">
+            <!-- File Uploads -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="flex flex-col items-center justify-center bg-gray-700 p-6 rounded-lg">
+                    <h2 class="text-xl font-semibold mb-3">1. Upload Image</h2>
+                    <input type="file" id="imageUpload" accept="image/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer" />
+                </div>
+                <div class="flex flex-col items-center justify-center bg-gray-700 p-6 rounded-lg">
+                    <h2 class="text-xl font-semibold mb-3">2. Upload Audio</h2>
+                    <input type="file" id="audioUpload" accept="audio/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer" />
+                </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-semibold mb-4 text-center">Preview</h2>
+                <div class="bg-black rounded-lg overflow-hidden shadow-lg">
+                    <canvas id="visualizerCanvas" width="1280" height="720"></canvas>
+                </div>
+                <audio id="audioPlayer" class="w-full mt-4"></audio>
+            </div>
+
+            <!-- Action Buttons -->
+            <div id="controls" class="flex flex-wrap items-center justify-center gap-4">
+                <button id="startBtn" class="btn bg-green-600 hover:bg-green-700" disabled>Start</button>
+                <button id="pauseBtn" class="btn bg-yellow-500 hover:bg-yellow-600 hidden">Pause</button>
+                <button id="resumeBtn" class="btn bg-green-600 hover:bg-green-700 hidden">Resume</button>
+                <button id="stopBtn" class="btn bg-red-600 hover:bg-red-700 hidden">Stop</button>
+            </div>
+            
+            <!-- Status & Downloads -->
+            <div class="text-center mt-6">
+                <div id="statusMessage" class="text-yellow-400 h-6 mb-4"></div>
+                <div id="downloadContainer" class="flex flex-col items-center gap-3"></div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // DOM Element References
+        const imageUpload = document.getElementById('imageUpload');
+        const audioUpload = document.getElementById('audioUpload');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resumeBtn = document.getElementById('resumeBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const downloadContainer = document.getElementById('downloadContainer');
+        const statusMessage = document.getElementById('statusMessage');
+        const canvas = document.getElementById('visualizerCanvas');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const ctx = canvas.getContext('2d');
+
+        // State variables
+        let audioContext, analyser, source, dataArray, bufferLength;
+        let backgroundImage = null;
+        let audioSrc = null;
+        let animationFrameId;
+        let mediaRecorder;
+        let recordedChunks = [];
+        let appState = 'idle'; // idle, recording, paused
+        let clipCounter = 0;
+
+        // Initial setup
+        drawInitialState();
+
+        // --- Event Listeners ---
+        imageUpload.addEventListener('change', handleImageUpload);
+        audioUpload.addEventListener('change', handleAudioUpload);
+        startBtn.addEventListener('click', handleStart);
+        pauseBtn.addEventListener('click', handlePause);
+        resumeBtn.addEventListener('click', handleResume);
+        stopBtn.addEventListener('click', handleStop);
+        audioPlayer.addEventListener('ended', handleStop);
+
+        // --- Handlers ---
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    backgroundImage = new Image();
+                    backgroundImage.onload = () => {
+                        drawInitialState();
+                        checkFilesReady();
+                    };
+                    backgroundImage.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleAudioUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                audioSrc = URL.createObjectURL(file);
+                audioPlayer.src = audioSrc;
+                checkFilesReady();
+            }
+        }
+
+        function handleStart() {
+            if (appState !== 'idle') return;
+            appState = 'recording';
+            clipCounter++;
+            statusMessage.textContent = `Recording Clip ${clipCounter}...`;
+            
+            setupAudioApi();
+            mediaRecorder.start();
+            audioPlayer.play();
+            draw();
+
+            updateButtons();
+        }
+
+        function handlePause() {
+            if (appState !== 'recording') return;
+            appState = 'paused';
+            statusMessage.textContent = `Paused. Finishing Clip ${clipCounter}...`;
+            
+            audioPlayer.pause();
+            mediaRecorder.stop(); // This will trigger 'onstop' to finalize the clip
+            cancelAnimationFrame(animationFrameId);
+
+            updateButtons();
+        }
+
+        function handleResume() {
+            if (appState !== 'paused') return;
+            appState = 'recording';
+            clipCounter++;
+            statusMessage.textContent = `Recording Clip ${clipCounter}...`;
+
+            mediaRecorder.start();
+            audioPlayer.play();
+            draw();
+
+            updateButtons();
+        }
+
+        function handleStop() {
+            if (appState === 'idle') return;
+
+            if (appState === 'recording') {
+                mediaRecorder.stop(); // Finalize the current clip
+            }
+            
+            appState = 'idle';
+            statusMessage.textContent = 'Processing finished. All clips are ready for download.';
+            
+            audioPlayer.pause();
+            // Do not reset currentTime, so user knows where they left off.
+            cancelAnimationFrame(animationFrameId);
+            drawInitialState(); // Reset canvas view
+
+            updateButtons();
+        }
+
+        // --- Core Functions ---
+
+        function checkFilesReady() {
+            if (backgroundImage && audioSrc) {
+                startBtn.disabled = false;
+                statusMessage.textContent = 'Ready to start recording.';
+            }
+        }
+        
+        function updateButtons() {
+            startBtn.classList.toggle('hidden', appState !== 'idle');
+            pauseBtn.classList.toggle('hidden', appState !== 'recording');
+            resumeBtn.classList.toggle('hidden', appState !== 'paused');
+            stopBtn.classList.toggle('hidden', appState === 'idle');
+        }
+
+        function drawInitialState() {
+            ctx.fillStyle = '#1f2937';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (backgroundImage) {
+                const canvasAspect = canvas.width / canvas.height;
+                const imgAspect = backgroundImage.width / backgroundImage.height;
+                let sx = 0, sy = 0, sWidth = backgroundImage.width, sHeight = backgroundImage.height;
+
+                if (imgAspect > canvasAspect) {
+                    sWidth = backgroundImage.height * canvasAspect;
+                    sx = (backgroundImage.width - sWidth) / 2;
+                } else {
+                    sHeight = backgroundImage.width / canvasAspect;
+                    sy = (backgroundImage.height - sHeight) / 2;
+                }
+                ctx.drawImage(backgroundImage, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+            } else {
+                ctx.fillStyle = 'white';
+                ctx.font = '30px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Upload an image to see a preview', canvas.width / 2, canvas.height / 2);
+            }
+        }
+
+        function setupAudioApi() {
+            if (audioContext) return; // Only setup once
+
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+            
+            source = audioContext.createMediaElementSource(audioPlayer);
+            const destination = audioContext.createMediaStreamDestination();
+            
+            source.connect(analyser);
+            source.connect(audioContext.destination); // Play audio through speakers
+            analyser.connect(destination); // Pipe analyser data for recording
+
+            const canvasStream = canvas.captureStream(30);
+            const combinedStream = new MediaStream([...canvasStream.getVideoTracks(), ...destination.stream.getAudioTracks()]);
+            
+            mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm; codecs=vp9' });
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) recordedChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                const videoUrl = URL.createObjectURL(blob);
+                recordedChunks = []; // Clear for the next clip
+
+                const downloadLink = document.createElement('a');
+                downloadLink.href = videoUrl;
+                downloadLink.download = `visualizer-clip-${clipCounter}.webm`;
+                downloadLink.textContent = `Download Clip ${clipCounter}`;
+                downloadLink.className = 'btn bg-blue-600 hover:bg-blue-700';
+                downloadContainer.appendChild(downloadLink);
+
+                if (appState === 'paused') {
+                    statusMessage.textContent = `Clip ${clipCounter} is ready. Resume to record the next clip.`;
+                }
+            };
+        }
+
+        function draw() {
+            animationFrameId = requestAnimationFrame(draw);
+            analyser.getByteFrequencyData(dataArray);
+            drawInitialState(); // Redraw background image first
+
+            const barWidth = (canvas.width / bufferLength) * 1.5;
+            let barHeight;
+            let x = 0;
+
+            for (let i = 0; i < bufferLength; i++) {
+                barHeight = dataArray[i] * 1.5;
+                const gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
+                gradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)');
+                gradient.addColorStop(0.5, 'rgba(139, 92, 246, 0.7)');
+                gradient.addColorStop(1, 'rgba(236, 72, 153, 0.6)');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.fillRect(x, canvas.height - barHeight - 2, barWidth, 2);
+                x += barWidth + 2;
+            }
+        }
+    </script>
+</body>
+</html>
