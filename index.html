@@ -18,6 +18,23 @@
         .btn {
             @apply w-full sm:w-auto text-white font-bold py-3 px-8 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed;
         }
+        .file-upload-box {
+            transition: all 0.3s ease;
+        }
+        .file-upload-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        .progress-bar {
+            height: 6px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 0%; }
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
@@ -31,23 +48,55 @@
         <main class="bg-gray-800 rounded-xl shadow-2xl p-6 md:p-8">
             <!-- File Uploads -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div class="flex flex-col items-center justify-center bg-gray-700 p-6 rounded-lg">
+                <div class="file-upload-box flex flex-col items-center justify-center bg-gray-700 p-6 rounded-lg border-2 border-gray-600">
                     <h2 class="text-xl font-semibold mb-3">1. Upload Image</h2>
                     <input type="file" id="imageUpload" accept="image/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer" />
+                    <p id="imageFileName" class="text-xs text-gray-500 mt-2 h-4"></p>
                 </div>
-                <div class="flex flex-col items-center justify-center bg-gray-700 p-6 rounded-lg">
+                <div class="file-upload-box flex flex-col items-center justify-center bg-gray-700 p-6 rounded-lg border-2 border-gray-600">
                     <h2 class="text-xl font-semibold mb-3">2. Upload Audio</h2>
                     <input type="file" id="audioUpload" accept="audio/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer" />
+                    <p id="audioFileName" class="text-xs text-gray-500 mt-2 h-4"></p>
                 </div>
             </div>
 
             <!-- Preview -->
             <div class="mb-8">
                 <h2 class="text-2xl font-semibold mb-4 text-center">Preview</h2>
-                <div class="bg-black rounded-lg overflow-hidden shadow-lg">
+                <div class="bg-black rounded-lg overflow-hidden shadow-lg border-2 border-gray-700">
                     <canvas id="visualizerCanvas" width="1280" height="720"></canvas>
                 </div>
-                <audio id="audioPlayer" class="w-full mt-4"></audio>
+                <audio id="audioPlayer" controls class="w-full mt-4 rounded-lg"></audio>
+            </div>
+            
+            <!-- Visualizer Settings -->
+            <div class="bg-gray-700 p-6 rounded-lg mb-8 border-2 border-gray-600">
+                <h2 class="text-xl font-semibold mb-4">Visualizer Settings</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Bar Style</label>
+                        <select id="barStyle" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2">
+                            <option value="gradient">Gradient Bars</option>
+                            <option value="solid">Solid Bars</option>
+                            <option value="circle">Circular</option>
+                            <option value="wave">Wave Form</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Sensitivity: <span id="sensitivityValue">1.5</span></label>
+                        <input type="range" id="sensitivity" min="0.5" max="3" step="0.1" value="1.5" class="w-full">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Color Theme</label>
+                        <select id="colorTheme" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2">
+                            <option value="default">Blue-Purple-Pink</option>
+                            <option value="fire">Fire</option>
+                            <option value="ocean">Ocean</option>
+                            <option value="forest">Forest</option>
+                            <option value="sunset">Sunset</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
             <!-- Action Buttons -->
@@ -80,6 +129,12 @@
         const canvas = document.getElementById('visualizerCanvas');
         const audioPlayer = document.getElementById('audioPlayer');
         const ctx = canvas.getContext('2d');
+        const imageFileName = document.getElementById('imageFileName');
+        const audioFileName = document.getElementById('audioFileName');
+        const barStyle = document.getElementById('barStyle');
+        const sensitivity = document.getElementById('sensitivity');
+        const sensitivityValue = document.getElementById('sensitivityValue');
+        const colorTheme = document.getElementById('colorTheme');
 
         // State variables
         let audioContext, analyser, source, dataArray, bufferLength;
@@ -90,6 +145,9 @@
         let recordedChunks = [];
         let appState = 'idle'; // idle, recording, paused
         let clipCounter = 0;
+        let currentSensitivity = 1.5;
+        let currentBarStyle = 'gradient';
+        let currentColorTheme = 'default';
 
         // Initial setup
         drawInitialState();
@@ -102,11 +160,22 @@
         resumeBtn.addEventListener('click', handleResume);
         stopBtn.addEventListener('click', handleStop);
         audioPlayer.addEventListener('ended', handleStop);
+        sensitivity.addEventListener('input', (e) => {
+            currentSensitivity = parseFloat(e.target.value);
+            sensitivityValue.textContent = currentSensitivity;
+        });
+        barStyle.addEventListener('change', (e) => {
+            currentBarStyle = e.target.value;
+        });
+        colorTheme.addEventListener('change', (e) => {
+            currentColorTheme = e.target.value;
+        });
 
         // --- Handlers ---
         function handleImageUpload(e) {
             const file = e.target.files[0];
             if (file) {
+                imageFileName.textContent = file.name;
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     backgroundImage = new Image();
@@ -123,6 +192,7 @@
         function handleAudioUpload(e) {
             const file = e.target.files[0];
             if (file) {
+                audioFileName.textContent = file.name;
                 audioSrc = URL.createObjectURL(file);
                 audioPlayer.src = audioSrc;
                 checkFilesReady();
@@ -270,27 +340,116 @@
             };
         }
 
+        function getColorScheme() {
+            const schemes = {
+                default: ['rgba(59, 130, 246, 0.8)', 'rgba(139, 92, 246, 0.7)', 'rgba(236, 72, 153, 0.6)'],
+                fire: ['rgba(255, 69, 0, 0.8)', 'rgba(255, 140, 0, 0.7)', 'rgba(255, 215, 0, 0.6)'],
+                ocean: ['rgba(0, 119, 182, 0.8)', 'rgba(0, 180, 216, 0.7)', 'rgba(72, 202, 228, 0.6)'],
+                forest: ['rgba(34, 139, 34, 0.8)', 'rgba(50, 205, 50, 0.7)', 'rgba(144, 238, 144, 0.6)'],
+                sunset: ['rgba(255, 94, 77, 0.8)', 'rgba(251, 133, 0, 0.7)', 'rgba(255, 193, 7, 0.6)']
+            };
+            return schemes[currentColorTheme] || schemes.default;
+        }
+
         function draw() {
             animationFrameId = requestAnimationFrame(draw);
             analyser.getByteFrequencyData(dataArray);
             drawInitialState(); // Redraw background image first
 
+            const colors = getColorScheme();
+
+            switch(currentBarStyle) {
+                case 'gradient':
+                    drawGradientBars(colors);
+                    break;
+                case 'solid':
+                    drawSolidBars(colors);
+                    break;
+                case 'circle':
+                    drawCircularBars(colors);
+                    break;
+                case 'wave':
+                    drawWaveForm(colors);
+                    break;
+            }
+        }
+
+        function drawGradientBars(colors) {
             const barWidth = (canvas.width / bufferLength) * 1.5;
-            let barHeight;
             let x = 0;
 
             for (let i = 0; i < bufferLength; i++) {
-                barHeight = dataArray[i] * 1.5;
+                const barHeight = dataArray[i] * currentSensitivity;
                 const gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
-                gradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)');
-                gradient.addColorStop(0.5, 'rgba(139, 92, 246, 0.7)');
-                gradient.addColorStop(1, 'rgba(236, 72, 153, 0.6)');
+                gradient.addColorStop(0, colors[0]);
+                gradient.addColorStop(0.5, colors[1]);
+                gradient.addColorStop(1, colors[2]);
                 ctx.fillStyle = gradient;
                 ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
                 ctx.fillRect(x, canvas.height - barHeight - 2, barWidth, 2);
                 x += barWidth + 2;
             }
+        }
+
+        function drawSolidBars(colors) {
+            const barWidth = (canvas.width / bufferLength) * 1.5;
+            let x = 0;
+
+            for (let i = 0; i < bufferLength; i++) {
+                const barHeight = dataArray[i] * currentSensitivity;
+                const colorIndex = Math.floor((i / bufferLength) * colors.length);
+                ctx.fillStyle = colors[colorIndex];
+                ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                x += barWidth + 2;
+            }
+        }
+
+        function drawCircularBars(colors) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 50;
+
+            for (let i = 0; i < bufferLength; i++) {
+                const barHeight = dataArray[i] * currentSensitivity * 0.5;
+                const angle = (i / bufferLength) * Math.PI * 2;
+                const x1 = centerX + Math.cos(angle) * radius;
+                const y1 = centerY + Math.sin(angle) * radius;
+                const x2 = centerX + Math.cos(angle) * (radius + barHeight);
+                const y2 = centerY + Math.sin(angle) * (radius + barHeight);
+                
+                const colorIndex = Math.floor((i / bufferLength) * colors.length);
+                ctx.strokeStyle = colors[colorIndex];
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+        }
+
+        function drawWaveForm(colors) {
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = colors[1];
+            ctx.beginPath();
+
+            const sliceWidth = canvas.width / bufferLength;
+            let x = 0;
+
+            for (let i = 0; i < bufferLength; i++) {
+                const v = dataArray[i] / 255.0;
+                const y = (canvas.height / 2) + (v * canvas.height / 2 * currentSensitivity) - (canvas.height / 4);
+
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+
+                x += sliceWidth;
+            }
+
+            ctx.stroke();
         }
     </script>
 </body>
