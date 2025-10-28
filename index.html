@@ -50,6 +50,24 @@
         .overlay-item:hover .overlay-controls {
             display: flex;
         }
+        .export-options {
+            background: rgba(55, 65, 81, 0.95);
+            border: 1px solid rgba(75, 85, 99, 0.8);
+            backdrop-filter: blur(20px);
+        }
+        .quality-indicator {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+        .progress-container {
+            background: rgba(31, 41, 55, 0.9);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+        }
+        @media (max-width: 768px) {
+            .overlay-controls {
+                display: flex !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
@@ -87,7 +105,7 @@
             <!-- Visualizer Settings -->
             <div class="bg-gray-700 p-6 rounded-lg mb-8 border-2 border-gray-600">
                 <h2 class="text-xl font-semibold mb-4">Visualizer Settings</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-sm font-medium mb-2">Bar Style</label>
                         <select id="barStyle" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2">
@@ -95,6 +113,7 @@
                             <option value="solid">Solid Bars</option>
                             <option value="circle">Circular</option>
                             <option value="wave">Wave Form</option>
+                            <option value="spectrum">Spectrum</option>
                         </select>
                     </div>
                     <div>
@@ -109,6 +128,42 @@
                             <option value="ocean">Ocean</option>
                             <option value="forest">Forest</option>
                             <option value="sunset">Sunset</option>
+                            <option value="neon">Neon</option>
+                            <option value="rainbow">Rainbow</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Animation: <span id="animationSpeedValue">1.0</span>x</label>
+                        <input type="range" id="animationSpeed" min="0.2" max="3" step="0.1" value="1.0" class="w-full">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Export Settings -->
+            <div class="export-options p-6 rounded-lg mb-8">
+                <h2 class="text-xl font-semibold mb-4">🎬 Export Settings</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Video Quality</label>
+                        <select id="videoQuality" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2">
+                            <option value="720p">720p HD <span class="quality-indicator">(1280x720)</span></option>
+                            <option value="1080p">1080p Full HD <span class="quality-indicator">(1920x1080)</span></option>
+                            <option value="4k">4K Ultra HD <span class="quality-indicator">(3840x2160)</span></option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Frame Rate</label>
+                        <select id="frameRate" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2">
+                            <option value="24">24 FPS (Cinematic)</option>
+                            <option value="30" selected>30 FPS (Standard)</option>
+                            <option value="60">60 FPS (Smooth)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Export Format</label>
+                        <select id="exportFormat" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2">
+                            <option value="webm">WebM (Best Quality)</option>
+                            <option value="mp4">MP4 (Compatible)</option>
                         </select>
                     </div>
                 </div>
@@ -193,10 +248,26 @@
 
             <!-- Action Buttons -->
             <div id="controls" class="flex flex-wrap items-center justify-center gap-4">
-                <button id="startBtn" class="btn bg-green-600 hover:bg-green-700" disabled>Start</button>
-                <button id="pauseBtn" class="btn bg-yellow-500 hover:bg-yellow-600 hidden">Pause</button>
-                <button id="resumeBtn" class="btn bg-green-600 hover:bg-green-700 hidden">Resume</button>
-                <button id="stopBtn" class="btn bg-red-600 hover:bg-red-700 hidden">Stop</button>
+                <button id="startBtn" class="btn bg-green-600 hover:bg-green-700" disabled>🎬 Start Recording</button>
+                <button id="pauseBtn" class="btn bg-yellow-500 hover:bg-yellow-600 hidden">⏸️ Pause</button>
+                <button id="resumeBtn" class="btn bg-green-600 hover:bg-green-700 hidden">▶️ Resume</button>
+                <button id="stopBtn" class="btn bg-red-600 hover:bg-red-700 hidden">⏹️ Stop</button>
+                <button id="previewBtn" class="btn bg-purple-600 hover:bg-purple-700">👁️ Preview Mode</button>
+                <button id="fullscreenBtn" class="btn bg-indigo-600 hover:bg-indigo-700">🔍 Fullscreen</button>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div id="progressContainer" class="progress-container hidden mt-6 p-4 rounded-lg">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium">Recording Progress</span>
+                    <span id="recordingTime" class="text-sm text-blue-400">00:00</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2 mb-2">
+                    <div id="progressBar" class="progress-bar h-2 rounded-full" style="width: 0%"></div>
+                </div>
+                <div class="text-xs text-gray-400 text-center">
+                    <span id="progressText">Initializing...</span>
+                </div>
             </div>
             
             <!-- Status & Downloads -->
@@ -227,6 +298,17 @@
         const sensitivity = document.getElementById('sensitivity');
         const sensitivityValue = document.getElementById('sensitivityValue');
         const colorTheme = document.getElementById('colorTheme');
+        const animationSpeed = document.getElementById('animationSpeed');
+        const animationSpeedValue = document.getElementById('animationSpeedValue');
+        const videoQuality = document.getElementById('videoQuality');
+        const frameRate = document.getElementById('frameRate');
+        const exportFormat = document.getElementById('exportFormat');
+        const previewBtn = document.getElementById('previewBtn');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const recordingTime = document.getElementById('recordingTime');
+        const progressText = document.getElementById('progressText');
 
         // State variables
         let audioContext, analyser, source, dataArray, bufferLength;
@@ -240,6 +322,10 @@
         let currentSensitivity = 1.5;
         let currentBarStyle = 'gradient';
         let currentColorTheme = 'default';
+        let currentAnimationSpeed = 1.0;
+        let isPreviewMode = false;
+        let startTime = null;
+        let animationFrame = 0;
         
         // Overlay system
         let overlayImages = Array(5).fill(null);
@@ -274,6 +360,15 @@
         colorTheme.addEventListener('change', (e) => {
             currentColorTheme = e.target.value;
         });
+        animationSpeed.addEventListener('input', (e) => {
+            currentAnimationSpeed = parseFloat(e.target.value);
+            animationSpeedValue.textContent = e.target.value;
+        });
+        previewBtn.addEventListener('click', togglePreviewMode);
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        
+        // Quality change handler
+        videoQuality.addEventListener('change', updateCanvasSize);
         
         // Canvas mouse events for overlay dragging
         canvas.addEventListener('mousedown', handleCanvasMouseDown);
@@ -424,6 +519,10 @@
             clipCounter++;
             statusMessage.textContent = `Recording Clip ${clipCounter}...`;
             
+            startTime = Date.now();
+            progressContainer.classList.remove('hidden');
+            updateProgress();
+            
             setupAudioApi();
             mediaRecorder.start();
             audioPlayer.play();
@@ -468,11 +567,67 @@
             statusMessage.textContent = 'Processing finished. All clips are ready for download.';
             
             audioPlayer.pause();
-            // Do not reset currentTime, so user knows where they left off.
+            progressContainer.classList.add('hidden');
             cancelAnimationFrame(animationFrameId);
             drawInitialState(); // Reset canvas view
 
             updateButtons();
+        }
+        
+        function togglePreviewMode() {
+            isPreviewMode = !isPreviewMode;
+            if (isPreviewMode) {
+                previewBtn.textContent = '🎬 Record Mode';
+                previewBtn.className = 'btn bg-green-600 hover:bg-green-700';
+                if (audioSrc && !audioPlayer.paused) {
+                    draw(); // Start preview animation
+                }
+            } else {
+                previewBtn.textContent = '👁️ Preview Mode';
+                previewBtn.className = 'btn bg-purple-600 hover:bg-purple-700';
+                cancelAnimationFrame(animationFrameId);
+                drawInitialState();
+            }
+        }
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                canvas.requestFullscreen().catch(err => {
+                    console.log('Error attempting to enable fullscreen:', err);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        function updateCanvasSize() {
+            const quality = videoQuality.value;
+            const sizes = {
+                '720p': { width: 1280, height: 720 },
+                '1080p': { width: 1920, height: 1080 },
+                '4k': { width: 3840, height: 2160 }
+            };
+            
+            canvas.width = sizes[quality].width;
+            canvas.height = sizes[quality].height;
+            drawInitialState();
+        }
+        
+        function updateProgress() {
+            if (appState === 'recording' && startTime) {
+                const elapsed = (Date.now() - startTime) / 1000;
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = Math.floor(elapsed % 60);
+                recordingTime.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (audioPlayer.duration) {
+                    const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                    progressBar.style.width = `${progress}%`;
+                    progressText.textContent = `${Math.round(progress)}% complete`;
+                }
+                
+                requestAnimationFrame(updateProgress);
+            }
         }
 
         // --- Core Functions ---
@@ -557,24 +712,27 @@
             source.connect(audioContext.destination); // Play audio through speakers
             analyser.connect(destination); // Pipe analyser data for recording
 
-            const canvasStream = canvas.captureStream(30);
+            const canvasStream = canvas.captureStream(parseInt(frameRate.value));
             const combinedStream = new MediaStream([...canvasStream.getVideoTracks(), ...destination.stream.getAudioTracks()]);
             
-            mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm; codecs=vp9' });
+            const mimeType = exportFormat.value === 'mp4' ? 'video/mp4; codecs=avc1' : 'video/webm; codecs=vp9';
+            mediaRecorder = new MediaRecorder(combinedStream, { mimeType });
 
             mediaRecorder.ondataavailable = (event) => {
                 if (event.data.size > 0) recordedChunks.push(event.data);
             };
 
             mediaRecorder.onstop = () => {
-                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                const format = exportFormat.value === 'mp4' ? 'mp4' : 'webm';
+                const blob = new Blob(recordedChunks, { type: `video/${format}` });
                 const videoUrl = URL.createObjectURL(blob);
                 recordedChunks = []; // Clear for the next clip
 
+                const quality = videoQuality.value;
                 const downloadLink = document.createElement('a');
                 downloadLink.href = videoUrl;
-                downloadLink.download = `visualizer-clip-${clipCounter}.webm`;
-                downloadLink.textContent = `Download Clip ${clipCounter}`;
+                downloadLink.download = `visualizer-clip-${clipCounter}-${quality}.${format}`;
+                downloadLink.textContent = `📥 Download Clip ${clipCounter} (${quality.toUpperCase()})`;
                 downloadLink.className = 'btn bg-blue-600 hover:bg-blue-700';
                 downloadContainer.appendChild(downloadLink);
 
@@ -590,9 +748,25 @@
                 fire: ['rgba(255, 69, 0, 0.8)', 'rgba(255, 140, 0, 0.7)', 'rgba(255, 215, 0, 0.6)'],
                 ocean: ['rgba(0, 119, 182, 0.8)', 'rgba(0, 180, 216, 0.7)', 'rgba(72, 202, 228, 0.6)'],
                 forest: ['rgba(34, 139, 34, 0.8)', 'rgba(50, 205, 50, 0.7)', 'rgba(144, 238, 144, 0.6)'],
-                sunset: ['rgba(255, 94, 77, 0.8)', 'rgba(251, 133, 0, 0.7)', 'rgba(255, 193, 7, 0.6)']
+                sunset: ['rgba(255, 94, 77, 0.8)', 'rgba(251, 133, 0, 0.7)', 'rgba(255, 193, 7, 0.6)'],
+                neon: ['rgba(57, 255, 20, 0.8)', 'rgba(255, 20, 147, 0.7)', 'rgba(0, 191, 255, 0.6)'],
+                rainbow: null // Special case for dynamic rainbow
             };
+            
+            if (currentColorTheme === 'rainbow') {
+                return generateRainbowColors();
+            }
+            
             return schemes[currentColorTheme] || schemes.default;
+        }
+        
+        function generateRainbowColors() {
+            const colors = [];
+            for (let i = 0; i < 3; i++) {
+                const hue = (animationFrame * currentAnimationSpeed + i * 120) % 360;
+                colors.push(`hsla(${hue}, 80%, 60%, 0.8)`);
+            }
+            return colors;
         }
 
         function draw() {
@@ -600,6 +774,7 @@
             analyser.getByteFrequencyData(dataArray);
             drawInitialState(); // Redraw background image first
 
+            animationFrame += currentAnimationSpeed;
             const colors = getColorScheme();
 
             switch(currentBarStyle) {
@@ -614,6 +789,9 @@
                     break;
                 case 'wave':
                     drawWaveForm(colors);
+                    break;
+                case 'spectrum':
+                    drawSpectrum(colors);
                     break;
             }
             
@@ -697,6 +875,38 @@
             }
 
             ctx.stroke();
+        }
+        
+        function drawSpectrum(colors) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const maxRadius = Math.min(centerX, centerY) - 20;
+            
+            // Draw multiple concentric circles
+            for (let ring = 0; ring < 3; ring++) {
+                const ringRadius = maxRadius * (0.3 + ring * 0.25);
+                ctx.beginPath();
+                
+                for (let i = 0; i < bufferLength; i++) {
+                    const angle = (i / bufferLength) * Math.PI * 2;
+                    const amplitude = dataArray[i] * currentSensitivity * 0.3;
+                    const radius = ringRadius + amplitude * (ring + 1) * 0.5;
+                    
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+                    
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                
+                ctx.closePath();
+                ctx.strokeStyle = colors[ring % colors.length];
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
         }
         
         // Modified draw function to include overlays during recording
