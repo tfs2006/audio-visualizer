@@ -35,6 +35,21 @@
             0% { background-position: 0% 0%; }
             100% { background-position: 200% 0%; }
         }
+        .overlay-item {
+            background: rgba(75, 85, 99, 0.9);
+            border: 1px solid rgba(156, 163, 175, 0.5);
+            backdrop-filter: blur(10px);
+        }
+        .overlay-item:hover {
+            background: rgba(75, 85, 99, 1);
+            border-color: rgba(156, 163, 175, 0.8);
+        }
+        .overlay-controls {
+            display: none;
+        }
+        .overlay-item:hover .overlay-controls {
+            display: flex;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
@@ -98,6 +113,83 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Overlay Images -->
+            <div class="bg-gray-700 p-6 rounded-lg mb-8 border-2 border-gray-600">
+                <h2 class="text-xl font-semibold mb-4">Overlay Images (Optional)</h2>
+                <p class="text-sm text-gray-400 mb-4">Add up to 5 overlay images that will appear on top of your visualizer. You can drag and resize them in the preview.</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+                    <div class="overlay-item p-4 rounded-lg text-center">
+                        <h3 class="text-sm font-medium mb-2">Overlay 1</h3>
+                        <input type="file" id="overlay1Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2" />
+                        <p id="overlay1Name" class="text-xs text-gray-500 h-4 mb-2"></p>
+                        <div class="overlay-controls flex-col gap-1">
+                            <label class="text-xs">Size: <span id="overlay1SizeValue">50</span>%</label>
+                            <input type="range" id="overlay1Size" min="10" max="200" value="50" class="w-full text-xs">
+                            <label class="text-xs">Opacity: <span id="overlay1OpacityValue">80</span>%</label>
+                            <input type="range" id="overlay1Opacity" min="0" max="100" value="80" class="w-full text-xs">
+                            <button id="overlay1Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1">Remove</button>
+                        </div>
+                    </div>
+                    
+                    <div class="overlay-item p-4 rounded-lg text-center">
+                        <h3 class="text-sm font-medium mb-2">Overlay 2</h3>
+                        <input type="file" id="overlay2Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2" />
+                        <p id="overlay2Name" class="text-xs text-gray-500 h-4 mb-2"></p>
+                        <div class="overlay-controls flex-col gap-1">
+                            <label class="text-xs">Size: <span id="overlay2SizeValue">50</span>%</label>
+                            <input type="range" id="overlay2Size" min="10" max="200" value="50" class="w-full text-xs">
+                            <label class="text-xs">Opacity: <span id="overlay2OpacityValue">80</span>%</label>
+                            <input type="range" id="overlay2Opacity" min="0" max="100" value="80" class="w-full text-xs">
+                            <button id="overlay2Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1">Remove</button>
+                        </div>
+                    </div>
+                    
+                    <div class="overlay-item p-4 rounded-lg text-center">
+                        <h3 class="text-sm font-medium mb-2">Overlay 3</h3>
+                        <input type="file" id="overlay3Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2" />
+                        <p id="overlay3Name" class="text-xs text-gray-500 h-4 mb-2"></p>
+                        <div class="overlay-controls flex-col gap-1">
+                            <label class="text-xs">Size: <span id="overlay3SizeValue">50</span>%</label>
+                            <input type="range" id="overlay3Size" min="10" max="200" value="50" class="w-full text-xs">
+                            <label class="text-xs">Opacity: <span id="overlay3OpacityValue">80</span>%</label>
+                            <input type="range" id="overlay3Opacity" min="0" max="100" value="80" class="w-full text-xs">
+                            <button id="overlay3Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1">Remove</button>
+                        </div>
+                    </div>
+                    
+                    <div class="overlay-item p-4 rounded-lg text-center">
+                        <h3 class="text-sm font-medium mb-2">Overlay 4</h3>
+                        <input type="file" id="overlay4Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2" />
+                        <p id="overlay4Name" class="text-xs text-gray-500 h-4 mb-2"></p>
+                        <div class="overlay-controls flex-col gap-1">
+                            <label class="text-xs">Size: <span id="overlay4SizeValue">50</span>%</label>
+                            <input type="range" id="overlay4Size" min="10" max="200" value="50" class="w-full text-xs">
+                            <label class="text-xs">Opacity: <span id="overlay4OpacityValue">80</span>%</label>
+                            <input type="range" id="overlay4Opacity" min="0" max="100" value="80" class="w-full text-xs">
+                            <button id="overlay4Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1">Remove</button>
+                        </div>
+                    </div>
+                    
+                    <div class="overlay-item p-4 rounded-lg text-center">
+                        <h3 class="text-sm font-medium mb-2">Overlay 5</h3>
+                        <input type="file" id="overlay5Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2" />
+                        <p id="overlay5Name" class="text-xs text-gray-500 h-4 mb-2"></p>
+                        <div class="overlay-controls flex-col gap-1">
+                            <label class="text-xs">Size: <span id="overlay5SizeValue">50</span>%</label>
+                            <input type="range" id="overlay5Size" min="10" max="200" value="50" class="w-full text-xs">
+                            <label class="text-xs">Opacity: <span id="overlay5OpacityValue">80</span>%</label>
+                            <input type="range" id="overlay5Opacity" min="0" max="100" value="80" class="w-full text-xs">
+                            <button id="overlay5Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1">Remove</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <p class="text-xs text-gray-400">💡 Tip: Click and drag overlay images in the preview to reposition them</p>
+                </div>
+            </div>
 
             <!-- Action Buttons -->
             <div id="controls" class="flex flex-wrap items-center justify-center gap-4">
@@ -148,6 +240,18 @@
         let currentSensitivity = 1.5;
         let currentBarStyle = 'gradient';
         let currentColorTheme = 'default';
+        
+        // Overlay system
+        let overlayImages = Array(5).fill(null);
+        let overlaySettings = Array(5).fill(null).map((_, i) => ({
+            x: 100 + (i * 50), // Default positions spread out
+            y: 100 + (i * 50),
+            size: 50,
+            opacity: 80,
+            isDragging: false,
+            dragOffset: { x: 0, y: 0 }
+        }));
+        let activeOverlay = null;
 
         // Initial setup
         drawInitialState();
@@ -170,6 +274,20 @@
         colorTheme.addEventListener('change', (e) => {
             currentColorTheme = e.target.value;
         });
+        
+        // Canvas mouse events for overlay dragging
+        canvas.addEventListener('mousedown', handleCanvasMouseDown);
+        canvas.addEventListener('mousemove', handleCanvasMouseMove);
+        canvas.addEventListener('mouseup', handleCanvasMouseUp);
+        canvas.addEventListener('mouseleave', handleCanvasMouseUp);
+        
+        // Overlay event listeners
+        for (let i = 1; i <= 5; i++) {
+            document.getElementById(`overlay${i}Upload`).addEventListener('change', (e) => handleOverlayUpload(e, i-1));
+            document.getElementById(`overlay${i}Size`).addEventListener('input', (e) => handleOverlaySize(e, i-1));
+            document.getElementById(`overlay${i}Opacity`).addEventListener('input', (e) => handleOverlayOpacity(e, i-1));
+            document.getElementById(`overlay${i}Remove`).addEventListener('click', () => removeOverlay(i-1));
+        }
 
         // --- Handlers ---
         function handleImageUpload(e) {
@@ -187,6 +305,107 @@
                 };
                 reader.readAsDataURL(file);
             }
+        }
+        
+        function handleOverlayUpload(e, index) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById(`overlay${index+1}Name`).textContent = file.name;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    overlayImages[index] = new Image();
+                    overlayImages[index].onload = () => {
+                        drawInitialState();
+                    };
+                    overlayImages[index].src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function handleOverlaySize(e, index) {
+            overlaySettings[index].size = parseInt(e.target.value);
+            document.getElementById(`overlay${index+1}SizeValue`).textContent = e.target.value;
+            drawInitialState();
+        }
+        
+        function handleOverlayOpacity(e, index) {
+            overlaySettings[index].opacity = parseInt(e.target.value);
+            document.getElementById(`overlay${index+1}OpacityValue`).textContent = e.target.value;
+            drawInitialState();
+        }
+        
+        function removeOverlay(index) {
+            overlayImages[index] = null;
+            document.getElementById(`overlay${index+1}Upload`).value = '';
+            document.getElementById(`overlay${index+1}Name`).textContent = '';
+            drawInitialState();
+        }
+        
+        function handleCanvasMouseDown(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const mouseX = (e.clientX - rect.left) * scaleX;
+            const mouseY = (e.clientY - rect.top) * scaleY;
+            
+            // Check if clicking on any overlay (check in reverse order for top-to-bottom)
+            for (let i = overlayImages.length - 1; i >= 0; i--) {
+                if (overlayImages[i] && isPointInOverlay(mouseX, mouseY, i)) {
+                    activeOverlay = i;
+                    overlaySettings[i].isDragging = true;
+                    overlaySettings[i].dragOffset = {
+                        x: mouseX - overlaySettings[i].x,
+                        y: mouseY - overlaySettings[i].y
+                    };
+                    canvas.style.cursor = 'grabbing';
+                    break;
+                }
+            }
+        }
+        
+        function handleCanvasMouseMove(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const mouseX = (e.clientX - rect.left) * scaleX;
+            const mouseY = (e.clientY - rect.top) * scaleY;
+            
+            if (activeOverlay !== null && overlaySettings[activeOverlay].isDragging) {
+                overlaySettings[activeOverlay].x = mouseX - overlaySettings[activeOverlay].dragOffset.x;
+                overlaySettings[activeOverlay].y = mouseY - overlaySettings[activeOverlay].dragOffset.y;
+                drawInitialState();
+            } else {
+                // Check if hovering over any overlay
+                let hovering = false;
+                for (let i = overlayImages.length - 1; i >= 0; i--) {
+                    if (overlayImages[i] && isPointInOverlay(mouseX, mouseY, i)) {
+                        hovering = true;
+                        break;
+                    }
+                }
+                canvas.style.cursor = hovering ? 'grab' : 'default';
+            }
+        }
+        
+        function handleCanvasMouseUp() {
+            if (activeOverlay !== null) {
+                overlaySettings[activeOverlay].isDragging = false;
+                activeOverlay = null;
+            }
+            canvas.style.cursor = 'default';
+        }
+        
+        function isPointInOverlay(x, y, overlayIndex) {
+            const overlay = overlaySettings[overlayIndex];
+            const img = overlayImages[overlayIndex];
+            if (!img) return false;
+            
+            const scaledWidth = (img.width * overlay.size) / 100;
+            const scaledHeight = (img.height * overlay.size) / 100;
+            
+            return x >= overlay.x && x <= overlay.x + scaledWidth &&
+                   y >= overlay.y && y <= overlay.y + scaledHeight;
         }
 
         function handleAudioUpload(e) {
@@ -295,6 +514,31 @@
                 ctx.textAlign = 'center';
                 ctx.fillText('Upload an image to see a preview', canvas.width / 2, canvas.height / 2);
             }
+            
+            // Draw overlay images
+            drawOverlayImages();
+        }
+        
+        function drawOverlayImages() {
+            for (let i = 0; i < overlayImages.length; i++) {
+                if (overlayImages[i]) {
+                    const overlay = overlaySettings[i];
+                    const img = overlayImages[i];
+                    
+                    // Calculate scaled dimensions
+                    const scaledWidth = (img.width * overlay.size) / 100;
+                    const scaledHeight = (img.height * overlay.size) / 100;
+                    
+                    // Apply opacity
+                    ctx.globalAlpha = overlay.opacity / 100;
+                    
+                    // Draw the overlay image
+                    ctx.drawImage(img, overlay.x, overlay.y, scaledWidth, scaledHeight);
+                    
+                    // Reset alpha
+                    ctx.globalAlpha = 1.0;
+                }
+            }
         }
 
         function setupAudioApi() {
@@ -372,6 +616,9 @@
                     drawWaveForm(colors);
                     break;
             }
+            
+            // Draw overlays on top of the visualizer
+            drawOverlayImages();
         }
 
         function drawGradientBars(colors) {
@@ -450,6 +697,28 @@
             }
 
             ctx.stroke();
+        }
+        
+        // Modified draw function to include overlays during recording
+        function drawWithOverlays() {
+            // First draw the background and visualizer
+            switch(currentBarStyle) {
+                case 'gradient':
+                    drawGradientBars(getColorScheme());
+                    break;
+                case 'solid':
+                    drawSolidBars(getColorScheme());
+                    break;
+                case 'circle':
+                    drawCircularBars(getColorScheme());
+                    break;
+                case 'wave':
+                    drawWaveForm(getColorScheme());
+                    break;
+            }
+            
+            // Then draw overlays on top
+            drawOverlayImages();
         }
     </script>
 </body>
