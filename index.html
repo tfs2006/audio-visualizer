@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Audio Visualizer Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -67,48 +67,111 @@
             .overlay-controls {
                 display: flex !important;
             }
+            .btn {
+                font-size: 0.875rem;
+                padding: 0.5rem 1rem;
+                min-height: 44px; /* iOS touch target size */
+            }
+            #controls {
+                gap: 8px;
+            }
+            .file-upload-box {
+                padding: 1rem;
+            }
+            h1 {
+                font-size: 2rem !important;
+            }
+            .export-options, .bg-gray-700 {
+                padding: 1rem;
+            }
+            canvas {
+                touch-action: pan-y;
+            }
+        }
+        @media (max-width: 480px) {
+            .grid.lg\\:grid-cols-5 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .grid.md\\:grid-cols-3, .grid.md\\:grid-cols-4 {
+                grid-template-columns: 1fr;
+            }
+            .btn {
+                width: 100%;
+                font-size: 0.875rem;
+            }
+            h1 {
+                font-size: 1.75rem !important;
+            }
+            .p-6, .md\\:p-8 {
+                padding: 1rem !important;
+            }
+        }
+        /* High DPI displays */
+        @media (min-resolution: 2dppx) {
+            canvas {
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: crisp-edges;
+            }
+        }
+        /* Landscape orientation on mobile */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .min-h-screen {
+                min-height: auto;
+            }
+            .p-4 {
+                padding: 0.5rem;
+            }
+        }
+        /* Touch improvements */
+        .touch-target {
+            min-height: 44px;
+            min-width: 44px;
+        }
+        /* Prevent zoom on input focus (iOS) */
+        input[type="range"], input[type="file"], select {
+            font-size: 16px;
         }
     </style>
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
 
     <div class="w-full max-w-4xl mx-auto">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold tracking-tight text-white sm:text-5xl">Audio Visualizer Generator</h1>
-            <p class="mt-4 text-lg text-gray-400">Create multiple video clips from a single audio file.</p>
+        <header class="text-center mb-4 sm:mb-8">
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white">Audio Visualizer Generator</h1>
+            <p class="mt-2 sm:mt-4 text-base sm:text-lg text-gray-400">Create multiple video clips from a single audio file.</p>
         </header>
 
-        <main class="bg-gray-800 rounded-xl shadow-2xl p-6 md:p-8">
+        <main class="bg-gray-800 rounded-xl shadow-2xl p-4 sm:p-6 md:p-8">
             <!-- File Uploads -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div class="file-upload-box flex flex-col items-center justify-center bg-gray-700 p-6 rounded-lg border-2 border-gray-600">
-                    <h2 class="text-xl font-semibold mb-3">1. Upload Image</h2>
-                    <input type="file" id="imageUpload" accept="image/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer" />
+            <div class="grid grid-cols-1 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                <div class="file-upload-box flex flex-col items-center justify-center bg-gray-700 p-4 sm:p-6 rounded-lg border-2 border-gray-600">
+                    <h2 class="text-lg sm:text-xl font-semibold mb-3">📸 Upload Background Image</h2>
+                    <input type="file" id="imageUpload" accept="image/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer touch-target" />
                     <p id="imageFileName" class="text-xs text-gray-500 mt-2 h-4"></p>
                 </div>
-                <div class="file-upload-box flex flex-col items-center justify-center bg-gray-700 p-6 rounded-lg border-2 border-gray-600">
-                    <h2 class="text-xl font-semibold mb-3">2. Upload Audio</h2>
-                    <input type="file" id="audioUpload" accept="audio/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer" />
+                <div class="file-upload-box flex flex-col items-center justify-center bg-gray-700 p-4 sm:p-6 rounded-lg border-2 border-gray-600">
+                    <h2 class="text-lg sm:text-xl font-semibold mb-3">🎵 Upload Audio File</h2>
+                    <input type="file" id="audioUpload" accept="audio/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer touch-target" />
                     <p id="audioFileName" class="text-xs text-gray-500 mt-2 h-4"></p>
                 </div>
             </div>
 
             <!-- Preview -->
-            <div class="mb-8">
-                <h2 class="text-2xl font-semibold mb-4 text-center">Preview</h2>
+            <div class="mb-6 sm:mb-8">
+                <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-center">🎬 Preview</h2>
                 <div class="bg-black rounded-lg overflow-hidden shadow-lg border-2 border-gray-700">
-                    <canvas id="visualizerCanvas" width="1280" height="720"></canvas>
+                    <canvas id="visualizerCanvas" width="1280" height="720" class="w-full h-auto"></canvas>
                 </div>
-                <audio id="audioPlayer" controls class="w-full mt-4 rounded-lg"></audio>
+                <audio id="audioPlayer" controls class="w-full mt-4 rounded-lg touch-target"></audio>
             </div>
             
             <!-- Visualizer Settings -->
-            <div class="bg-gray-700 p-6 rounded-lg mb-8 border-2 border-gray-600">
-                <h2 class="text-xl font-semibold mb-4">Visualizer Settings</h2>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-gray-700 p-4 sm:p-6 rounded-lg mb-6 sm:mb-8 border-2 border-gray-600">
+                <h2 class="text-lg sm:text-xl font-semibold mb-4">🎨 Visualizer Settings</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-sm font-medium mb-2">Bar Style</label>
-                        <select id="barStyle" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2">
+                        <select id="barStyle" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 touch-target">
                             <option value="gradient">Gradient Bars</option>
                             <option value="solid">Solid Bars</option>
                             <option value="circle">Circular</option>
@@ -118,11 +181,11 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-2">Sensitivity: <span id="sensitivityValue">1.5</span></label>
-                        <input type="range" id="sensitivity" min="0.5" max="3" step="0.1" value="1.5" class="w-full">
+                        <input type="range" id="sensitivity" min="0.5" max="3" step="0.1" value="1.5" class="w-full touch-target">
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-2">Color Theme</label>
-                        <select id="colorTheme" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2">
+                        <select id="colorTheme" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 touch-target">
                             <option value="default">Blue-Purple-Pink</option>
                             <option value="fire">Fire</option>
                             <option value="ocean">Ocean</option>
@@ -134,26 +197,26 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-2">Animation: <span id="animationSpeedValue">1.0</span>x</label>
-                        <input type="range" id="animationSpeed" min="0.2" max="3" step="0.1" value="1.0" class="w-full">
+                        <input type="range" id="animationSpeed" min="0.2" max="3" step="0.1" value="1.0" class="w-full touch-target">
                     </div>
                 </div>
             </div>
             
             <!-- Export Settings -->
-            <div class="export-options p-6 rounded-lg mb-8">
-                <h2 class="text-xl font-semibold mb-4">🎬 Export Settings</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="export-options p-4 sm:p-6 rounded-lg mb-6 sm:mb-8">
+                <h2 class="text-lg sm:text-xl font-semibold mb-4">🎬 Export Settings</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium mb-2">Video Quality</label>
-                        <select id="videoQuality" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2">
-                            <option value="720p">720p HD <span class="quality-indicator">(1280x720)</span></option>
-                            <option value="1080p">1080p Full HD <span class="quality-indicator">(1920x1080)</span></option>
-                            <option value="4k">4K Ultra HD <span class="quality-indicator">(3840x2160)</span></option>
+                        <select id="videoQuality" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 touch-target">
+                            <option value="720p">720p HD (1280x720)</option>
+                            <option value="1080p">1080p Full HD (1920x1080)</option>
+                            <option value="4k">4K Ultra HD (3840x2160)</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-2">Frame Rate</label>
-                        <select id="frameRate" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2">
+                        <select id="frameRate" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 touch-target">
                             <option value="24">24 FPS (Cinematic)</option>
                             <option value="30" selected>30 FPS (Standard)</option>
                             <option value="60">60 FPS (Smooth)</option>
@@ -161,7 +224,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-2">Export Format</label>
-                        <select id="exportFormat" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2">
+                        <select id="exportFormat" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 touch-target">
                             <option value="webm">WebM (Best Quality)</option>
                             <option value="mp4">MP4 (Compatible)</option>
                         </select>
@@ -170,73 +233,73 @@
             </div>
             
             <!-- Overlay Images -->
-            <div class="bg-gray-700 p-6 rounded-lg mb-8 border-2 border-gray-600">
-                <h2 class="text-xl font-semibold mb-4">Overlay Images (Optional)</h2>
+            <div class="bg-gray-700 p-4 sm:p-6 rounded-lg mb-6 sm:mb-8 border-2 border-gray-600">
+                <h2 class="text-lg sm:text-xl font-semibold mb-4">🖼️ Overlay Images (Optional)</h2>
                 <p class="text-sm text-gray-400 mb-4">Add up to 5 overlay images that will appear on top of your visualizer. You can drag and resize them in the preview.</p>
                 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
-                    <div class="overlay-item p-4 rounded-lg text-center">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-4">
+                    <div class="overlay-item p-3 sm:p-4 rounded-lg text-center">
                         <h3 class="text-sm font-medium mb-2">Overlay 1</h3>
-                        <input type="file" id="overlay1Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2" />
-                        <p id="overlay1Name" class="text-xs text-gray-500 h-4 mb-2"></p>
+                        <input type="file" id="overlay1Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2 touch-target" />
+                        <p id="overlay1Name" class="text-xs text-gray-500 h-4 mb-2 truncate"></p>
                         <div class="overlay-controls flex-col gap-1">
                             <label class="text-xs">Size: <span id="overlay1SizeValue">50</span>%</label>
-                            <input type="range" id="overlay1Size" min="10" max="200" value="50" class="w-full text-xs">
+                            <input type="range" id="overlay1Size" min="10" max="200" value="50" class="w-full text-xs touch-target">
                             <label class="text-xs">Opacity: <span id="overlay1OpacityValue">80</span>%</label>
-                            <input type="range" id="overlay1Opacity" min="0" max="100" value="80" class="w-full text-xs">
-                            <button id="overlay1Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1">Remove</button>
+                            <input type="range" id="overlay1Opacity" min="0" max="100" value="80" class="w-full text-xs touch-target">
+                            <button id="overlay1Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1 touch-target">Remove</button>
                         </div>
                     </div>
                     
-                    <div class="overlay-item p-4 rounded-lg text-center">
+                    <div class="overlay-item p-3 sm:p-4 rounded-lg text-center">
                         <h3 class="text-sm font-medium mb-2">Overlay 2</h3>
-                        <input type="file" id="overlay2Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2" />
-                        <p id="overlay2Name" class="text-xs text-gray-500 h-4 mb-2"></p>
+                        <input type="file" id="overlay2Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2 touch-target" />
+                        <p id="overlay2Name" class="text-xs text-gray-500 h-4 mb-2 truncate"></p>
                         <div class="overlay-controls flex-col gap-1">
                             <label class="text-xs">Size: <span id="overlay2SizeValue">50</span>%</label>
-                            <input type="range" id="overlay2Size" min="10" max="200" value="50" class="w-full text-xs">
+                            <input type="range" id="overlay2Size" min="10" max="200" value="50" class="w-full text-xs touch-target">
                             <label class="text-xs">Opacity: <span id="overlay2OpacityValue">80</span>%</label>
-                            <input type="range" id="overlay2Opacity" min="0" max="100" value="80" class="w-full text-xs">
-                            <button id="overlay2Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1">Remove</button>
+                            <input type="range" id="overlay2Opacity" min="0" max="100" value="80" class="w-full text-xs touch-target">
+                            <button id="overlay2Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1 touch-target">Remove</button>
                         </div>
                     </div>
                     
-                    <div class="overlay-item p-4 rounded-lg text-center">
+                    <div class="overlay-item p-3 sm:p-4 rounded-lg text-center">
                         <h3 class="text-sm font-medium mb-2">Overlay 3</h3>
-                        <input type="file" id="overlay3Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2" />
-                        <p id="overlay3Name" class="text-xs text-gray-500 h-4 mb-2"></p>
+                        <input type="file" id="overlay3Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2 touch-target" />
+                        <p id="overlay3Name" class="text-xs text-gray-500 h-4 mb-2 truncate"></p>
                         <div class="overlay-controls flex-col gap-1">
                             <label class="text-xs">Size: <span id="overlay3SizeValue">50</span>%</label>
-                            <input type="range" id="overlay3Size" min="10" max="200" value="50" class="w-full text-xs">
+                            <input type="range" id="overlay3Size" min="10" max="200" value="50" class="w-full text-xs touch-target">
                             <label class="text-xs">Opacity: <span id="overlay3OpacityValue">80</span>%</label>
-                            <input type="range" id="overlay3Opacity" min="0" max="100" value="80" class="w-full text-xs">
-                            <button id="overlay3Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1">Remove</button>
+                            <input type="range" id="overlay3Opacity" min="0" max="100" value="80" class="w-full text-xs touch-target">
+                            <button id="overlay3Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1 touch-target">Remove</button>
                         </div>
                     </div>
                     
-                    <div class="overlay-item p-4 rounded-lg text-center">
+                    <div class="overlay-item p-3 sm:p-4 rounded-lg text-center">
                         <h3 class="text-sm font-medium mb-2">Overlay 4</h3>
-                        <input type="file" id="overlay4Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2" />
-                        <p id="overlay4Name" class="text-xs text-gray-500 h-4 mb-2"></p>
+                        <input type="file" id="overlay4Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2 touch-target" />
+                        <p id="overlay4Name" class="text-xs text-gray-500 h-4 mb-2 truncate"></p>
                         <div class="overlay-controls flex-col gap-1">
                             <label class="text-xs">Size: <span id="overlay4SizeValue">50</span>%</label>
-                            <input type="range" id="overlay4Size" min="10" max="200" value="50" class="w-full text-xs">
+                            <input type="range" id="overlay4Size" min="10" max="200" value="50" class="w-full text-xs touch-target">
                             <label class="text-xs">Opacity: <span id="overlay4OpacityValue">80</span>%</label>
-                            <input type="range" id="overlay4Opacity" min="0" max="100" value="80" class="w-full text-xs">
-                            <button id="overlay4Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1">Remove</button>
+                            <input type="range" id="overlay4Opacity" min="0" max="100" value="80" class="w-full text-xs touch-target">
+                            <button id="overlay4Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1 touch-target">Remove</button>
                         </div>
                     </div>
                     
-                    <div class="overlay-item p-4 rounded-lg text-center">
+                    <div class="overlay-item p-3 sm:p-4 rounded-lg text-center">
                         <h3 class="text-sm font-medium mb-2">Overlay 5</h3>
-                        <input type="file" id="overlay5Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2" />
-                        <p id="overlay5Name" class="text-xs text-gray-500 h-4 mb-2"></p>
+                        <input type="file" id="overlay5Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2 touch-target" />
+                        <p id="overlay5Name" class="text-xs text-gray-500 h-4 mb-2 truncate"></p>
                         <div class="overlay-controls flex-col gap-1">
                             <label class="text-xs">Size: <span id="overlay5SizeValue">50</span>%</label>
-                            <input type="range" id="overlay5Size" min="10" max="200" value="50" class="w-full text-xs">
+                            <input type="range" id="overlay5Size" min="10" max="200" value="50" class="w-full text-xs touch-target">
                             <label class="text-xs">Opacity: <span id="overlay5OpacityValue">80</span>%</label>
-                            <input type="range" id="overlay5Opacity" min="0" max="100" value="80" class="w-full text-xs">
-                            <button id="overlay5Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1">Remove</button>
+                            <input type="range" id="overlay5Opacity" min="0" max="100" value="80" class="w-full text-xs touch-target">
+                            <button id="overlay5Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1 touch-target">Remove</button>
                         </div>
                     </div>
                 </div>
@@ -247,13 +310,13 @@
             </div>
 
             <!-- Action Buttons -->
-            <div id="controls" class="flex flex-wrap items-center justify-center gap-4">
-                <button id="startBtn" class="btn bg-green-600 hover:bg-green-700" disabled>🎬 Start Recording</button>
-                <button id="pauseBtn" class="btn bg-yellow-500 hover:bg-yellow-600 hidden">⏸️ Pause</button>
-                <button id="resumeBtn" class="btn bg-green-600 hover:bg-green-700 hidden">▶️ Resume</button>
-                <button id="stopBtn" class="btn bg-red-600 hover:bg-red-700 hidden">⏹️ Stop</button>
-                <button id="previewBtn" class="btn bg-purple-600 hover:bg-purple-700">👁️ Preview Mode</button>
-                <button id="fullscreenBtn" class="btn bg-indigo-600 hover:bg-indigo-700">🔍 Fullscreen</button>
+            <div id="controls" class="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
+                <button id="startBtn" class="btn bg-green-600 hover:bg-green-700 touch-target" disabled>🎬 Start Recording</button>
+                <button id="pauseBtn" class="btn bg-yellow-500 hover:bg-yellow-600 touch-target hidden">⏸️ Pause</button>
+                <button id="resumeBtn" class="btn bg-green-600 hover:bg-green-700 touch-target hidden">▶️ Resume</button>
+                <button id="stopBtn" class="btn bg-red-600 hover:bg-red-700 touch-target hidden">⏹️ Stop</button>
+                <button id="previewBtn" class="btn bg-purple-600 hover:bg-purple-700 touch-target">👁️ Preview Mode</button>
+                <button id="fullscreenBtn" class="btn bg-indigo-600 hover:bg-indigo-700 touch-target">🔍 Fullscreen</button>
             </div>
             
             <!-- Progress Bar -->
@@ -375,6 +438,14 @@
         canvas.addEventListener('mousemove', handleCanvasMouseMove);
         canvas.addEventListener('mouseup', handleCanvasMouseUp);
         canvas.addEventListener('mouseleave', handleCanvasMouseUp);
+        
+        // Touch events for mobile
+        canvas.addEventListener('touchstart', handleCanvasTouchStart, { passive: false });
+        canvas.addEventListener('touchmove', handleCanvasTouchMove, { passive: false });
+        canvas.addEventListener('touchend', handleCanvasTouchEnd);
+        
+        // Prevent context menu on long press
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
         
         // Overlay event listeners
         for (let i = 1; i <= 5; i++) {
@@ -502,6 +573,56 @@
             return x >= overlay.x && x <= overlay.x + scaledWidth &&
                    y >= overlay.y && y <= overlay.y + scaledHeight;
         }
+        
+        // Touch event handlers for mobile support
+        function handleCanvasTouchStart(e) {
+            e.preventDefault();
+            if (e.touches.length === 1) {
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const touchX = (touch.clientX - rect.left) * scaleX;
+                const touchY = (touch.clientY - rect.top) * scaleY;
+                
+                // Check if touching any overlay
+                for (let i = overlayImages.length - 1; i >= 0; i--) {
+                    if (overlayImages[i] && isPointInOverlay(touchX, touchY, i)) {
+                        activeOverlay = i;
+                        overlaySettings[i].isDragging = true;
+                        overlaySettings[i].dragOffset = {
+                            x: touchX - overlaySettings[i].x,
+                            y: touchY - overlaySettings[i].y
+                        };
+                        break;
+                    }
+                }
+            }
+        }
+        
+        function handleCanvasTouchMove(e) {
+            e.preventDefault();
+            if (e.touches.length === 1 && activeOverlay !== null && overlaySettings[activeOverlay].isDragging) {
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const touchX = (touch.clientX - rect.left) * scaleX;
+                const touchY = (touch.clientY - rect.top) * scaleY;
+                
+                overlaySettings[activeOverlay].x = touchX - overlaySettings[activeOverlay].dragOffset.x;
+                overlaySettings[activeOverlay].y = touchY - overlaySettings[activeOverlay].dragOffset.y;
+                drawInitialState();
+            }
+        }
+        
+        function handleCanvasTouchEnd(e) {
+            e.preventDefault();
+            if (activeOverlay !== null) {
+                overlaySettings[activeOverlay].isDragging = false;
+                activeOverlay = null;
+            }
+        }
 
         function handleAudioUpload(e) {
             const file = e.target.files[0];
@@ -592,11 +713,24 @@
         
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
-                canvas.requestFullscreen().catch(err => {
-                    console.log('Error attempting to enable fullscreen:', err);
-                });
+                const element = canvas.parentElement; // Use canvas container for better mobile support
+                if (element.requestFullscreen) {
+                    element.requestFullscreen();
+                } else if (element.webkitRequestFullscreen) { // Safari
+                    element.webkitRequestFullscreen();
+                } else if (element.msRequestFullscreen) { // IE11
+                    element.msRequestFullscreen();
+                } else {
+                    console.log('Fullscreen not supported on this device');
+                }
             } else {
-                document.exitFullscreen();
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
             }
         }
         
@@ -610,8 +744,24 @@
             
             canvas.width = sizes[quality].width;
             canvas.height = sizes[quality].height;
+            
+            // Ensure canvas is responsive
+            canvas.style.width = '100%';
+            canvas.style.height = 'auto';
+            
             drawInitialState();
         }
+        
+        // Device orientation change handler
+        function handleOrientationChange() {
+            setTimeout(() => {
+                drawInitialState();
+            }, 100);
+        }
+        
+        // Add orientation change listener
+        window.addEventListener('orientationchange', handleOrientationChange);
+        window.addEventListener('resize', handleOrientationChange);
         
         function updateProgress() {
             if (appState === 'recording' && startTime) {
