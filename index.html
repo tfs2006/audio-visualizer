@@ -7,16 +7,36 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+        }
         body {
             font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overscroll-behavior: none;
+            padding-bottom: env(safe-area-inset-bottom);
         }
         #visualizerCanvas {
             aspect-ratio: 16 / 9;
             width: 100%;
             height: auto;
+            max-height: 70vh;
+            object-fit: contain;
         }
         .btn {
             @apply w-full sm:w-auto text-white font-bold py-3 px-8 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed;
+            -webkit-appearance: none;
+            appearance: none;
+            touch-action: manipulation;
+        }
+        .btn:active {
+            transform: scale(0.98);
         }
         .file-upload-box {
             transition: all 0.3s ease;
@@ -63,14 +83,92 @@
             background: rgba(31, 41, 55, 0.9);
             border: 2px solid rgba(59, 130, 246, 0.3);
         }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+        /* Better range input styling */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+            height: 44px;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            background: #4b5563;
+            height: 8px;
+            border-radius: 4px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: -10px;
+            background-color: #3b82f6;
+            height: 28px;
+            width: 28px;
+            border-radius: 50%;
+            border: 2px solid #1f2937;
+        }
+        input[type="range"]::-moz-range-track {
+            background: #4b5563;
+            height: 8px;
+            border-radius: 4px;
+        }
+        input[type="range"]::-moz-range-thumb {
+            background-color: #3b82f6;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            border: 2px solid #1f2937;
+        }
+        /* Audio player styling */
+        audio {
+            width: 100%;
+            height: 44px;
+            border-radius: 8px;
+        }
+        audio::-webkit-media-controls-panel {
+            background: #374151;
+        }
+        /* Select styling */
+        select {
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+        /* Tablet styles */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .grid.lg\\:grid-cols-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .grid.lg\\:grid-cols-5 {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
         @media (max-width: 768px) {
             .overlay-controls {
                 display: flex !important;
             }
             .btn {
                 font-size: 0.875rem;
-                padding: 0.5rem 1rem;
-                min-height: 44px; /* iOS touch target size */
+                padding: 0.75rem 1rem;
+                min-height: 48px;
             }
             #controls {
                 gap: 8px;
@@ -79,13 +177,17 @@
                 padding: 1rem;
             }
             h1 {
-                font-size: 2rem !important;
+                font-size: 1.75rem !important;
             }
             .export-options, .bg-gray-700 {
                 padding: 1rem;
             }
             canvas {
-                touch-action: pan-y;
+                touch-action: none;
+            }
+            /* Improve text overlay controls on mobile */
+            .grid.md\\:grid-cols-2 {
+                grid-template-columns: 1fr;
             }
         }
         @media (max-width: 480px) {
@@ -95,15 +197,25 @@
             .grid.md\\:grid-cols-3, .grid.md\\:grid-cols-4 {
                 grid-template-columns: 1fr;
             }
+            .grid.sm\\:grid-cols-2 {
+                grid-template-columns: 1fr;
+            }
             .btn {
                 width: 100%;
                 font-size: 0.875rem;
             }
             h1 {
-                font-size: 1.75rem !important;
+                font-size: 1.5rem !important;
             }
             .p-6, .md\\:p-8 {
-                padding: 1rem !important;
+                padding: 0.75rem !important;
+            }
+            /* Stack buttons vertically on very small screens */
+            #controls {
+                flex-direction: column;
+            }
+            #controls .btn {
+                margin: 0;
             }
         }
         /* High DPI displays */
@@ -121,6 +233,18 @@
             .p-4 {
                 padding: 0.5rem;
             }
+            #visualizerCanvas {
+                max-height: 50vh;
+            }
+            header {
+                margin-bottom: 0.5rem !important;
+            }
+            header h1 {
+                font-size: 1.25rem !important;
+            }
+            header p {
+                display: none;
+            }
         }
         /* Touch improvements */
         .touch-target {
@@ -128,8 +252,38 @@
             min-width: 44px;
         }
         /* Prevent zoom on input focus (iOS) */
-        input[type="range"], input[type="file"], select {
+        input[type="range"], input[type="file"], input[type="text"], input[type="color"], select, textarea {
             font-size: 16px;
+        }
+        /* Safe area padding for notched devices */
+        @supports (padding: env(safe-area-inset-left)) {
+            body {
+                padding-left: env(safe-area-inset-left);
+                padding-right: env(safe-area-inset-right);
+            }
+        }
+        /* Fullscreen styles */
+        :fullscreen #visualizerCanvas,
+        :-webkit-full-screen #visualizerCanvas {
+            max-height: 100vh;
+            width: 100vw;
+            height: 100vh;
+            object-fit: contain;
+        }
+        /* Loading state */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        /* Focus styles for accessibility */
+        button:focus-visible, select:focus-visible, input:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+        /* Disabled state improvement */
+        button:disabled, input:disabled, select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -538,6 +692,17 @@
         let cachedBackground = null;
         let backgroundNeedsUpdate = true;
         
+        // Device detection
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        
+        // Adjust default settings for mobile
+        if (isMobile) {
+            targetFrameInterval = 1000 / 24; // Lower framerate on mobile for performance
+        }
+        
         // Overlay system
         let overlayImages = Array(5).fill(null);
         let overlaySettings = Array(5).fill(null).map((_, i) => ({
@@ -672,9 +837,23 @@
                 console.warn('Could not load settings from localStorage:', e);
             }
         }
+        
+        // Set mobile-friendly defaults if no saved settings
+        function applyMobileDefaults() {
+            if (isMobile && !localStorage.getItem(STORAGE_KEY)) {
+                // Default to 720p on mobile for better performance
+                videoQuality.value = '720p';
+                frameRate.value = '24';
+                // Lower bar count for performance
+                currentBarCount = 48;
+                document.getElementById('barCount').value = 48;
+                document.getElementById('barCountValue').textContent = '48';
+            }
+        }
 
         // Initial setup
         loadSettings(); // Load saved settings first
+        applyMobileDefaults(); // Apply mobile defaults if needed
         drawInitialState();
 
         // --- Event Listeners ---
@@ -743,6 +922,30 @@
         document.getElementById('shortcutsToggle').addEventListener('click', () => {
             const help = document.getElementById('shortcutsHelp');
             help.classList.toggle('hidden');
+        });
+        
+        // Hide keyboard shortcuts on mobile (touch devices)
+        if (hasTouch && isMobile) {
+            document.getElementById('shortcutsToggle').style.display = 'none';
+        }
+        
+        // Visibility change handler - pause when user switches tabs/apps
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // Page is hidden - pause if in preview mode
+                if (isPreviewMode && !audioPlayer.paused) {
+                    audioPlayer.pause();
+                }
+            }
+        });
+        
+        // Handle page unload - warn if recording
+        window.addEventListener('beforeunload', (e) => {
+            if (appState === 'recording') {
+                e.preventDefault();
+                e.returnValue = 'Recording in progress. Are you sure you want to leave?';
+                return e.returnValue;
+            }
         });
         
         // Quality change handler
@@ -1067,26 +1270,40 @@
 
         async function handleStart() {
             if (appState !== 'idle') return;
-            appState = 'recording';
-            clipCounter++;
-            statusMessage.textContent = `Recording Clip ${clipCounter}...`;
             
-            startTime = Date.now();
-            progressContainer.classList.remove('hidden');
-            updateProgress();
-            
-            await setupAudioApi();
-            
-            // Resume audio context if suspended (browser policy)
-            if (audioContext.state === 'suspended') {
-                await audioContext.resume();
-            }
-            
-            mediaRecorder.start();
-            audioPlayer.play();
-            draw();
+            try {
+                appState = 'recording';
+                clipCounter++;
+                statusMessage.textContent = `Recording Clip ${clipCounter}...`;
+                
+                startTime = Date.now();
+                progressContainer.classList.remove('hidden');
+                updateProgress();
+                
+                await setupAudioApi();
+                
+                // Resume audio context if suspended (browser policy - especially iOS)
+                if (audioContext.state === 'suspended') {
+                    await audioContext.resume();
+                }
+                
+                // iOS Safari requires user interaction to play audio
+                const playPromise = audioPlayer.play();
+                if (playPromise !== undefined) {
+                    await playPromise;
+                }
+                
+                mediaRecorder.start();
+                draw();
 
-            updateButtons();
+                updateButtons();
+            } catch (error) {
+                console.error('Error starting recording:', error);
+                appState = 'idle';
+                statusMessage.textContent = `Error: ${error.message}. Try again.`;
+                progressContainer.classList.add('hidden');
+                updateButtons();
+            }
         }
 
         function handlePause() {
@@ -1159,26 +1376,58 @@
         }
         
         function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                const element = canvas.parentElement; // Use canvas container for better mobile support
-                if (element.requestFullscreen) {
-                    element.requestFullscreen();
-                } else if (element.webkitRequestFullscreen) { // Safari
-                    element.webkitRequestFullscreen();
-                } else if (element.msRequestFullscreen) { // IE11
-                    element.msRequestFullscreen();
+            const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+            
+            if (!fullscreenElement) {
+                const element = canvas.parentElement;
+                
+                // Try various fullscreen methods for cross-browser support
+                const requestFullscreen = element.requestFullscreen || 
+                                         element.webkitRequestFullscreen || 
+                                         element.mozRequestFullScreen || 
+                                         element.msRequestFullscreen;
+                
+                if (requestFullscreen) {
+                    requestFullscreen.call(element).catch(err => {
+                        // Fullscreen failed, show message
+                        statusMessage.textContent = 'Fullscreen not available on this device';
+                        setTimeout(() => {
+                            if (statusMessage.textContent === 'Fullscreen not available on this device') {
+                                statusMessage.textContent = '';
+                            }
+                        }, 3000);
+                    });
                 } else {
-                    console.log('Fullscreen not supported on this device');
+                    // For iOS which doesn't support fullscreen API
+                    // Scroll to canvas and make it prominent
+                    canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    statusMessage.textContent = 'Tip: Rotate device to landscape for best view';
+                    setTimeout(() => {
+                        if (statusMessage.textContent.includes('Rotate')) {
+                            statusMessage.textContent = '';
+                        }
+                    }, 3000);
                 }
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
+                const exitFullscreen = document.exitFullscreen || 
+                                      document.webkitExitFullscreen || 
+                                      document.mozCancelFullScreen || 
+                                      document.msExitFullscreen;
+                if (exitFullscreen) {
+                    exitFullscreen.call(document);
                 }
             }
+        }
+        
+        // Listen for fullscreen changes
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+        
+        function handleFullscreenChange() {
+            const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+            fullscreenBtn.textContent = isFullscreen ? '✕ Exit Fullscreen' : '🔍 Fullscreen';
         }
         
         function updateCanvasSize() {
@@ -1202,19 +1451,54 @@
             // Update target frame interval based on frame rate setting
             targetFrameInterval = 1000 / parseInt(frameRate.value);
             
+            // On mobile, cap at lower resolution for performance
+            if (isMobile && quality === '4k') {
+                statusMessage.textContent = '⚠️ 4K may be slow on mobile. Consider 1080p.';
+                setTimeout(() => {
+                    if (statusMessage.textContent.includes('4K')) {
+                        statusMessage.textContent = '';
+                    }
+                }, 4000);
+            }
+            
             drawInitialState();
         }
         
         // Device orientation change handler
         function handleOrientationChange() {
-            setTimeout(() => {
+            // Debounce resize events
+            clearTimeout(window.resizeTimeout);
+            window.resizeTimeout = setTimeout(() => {
+                backgroundNeedsUpdate = true;
                 drawInitialState();
-            }, 100);
+            }, 150);
         }
         
         // Add orientation change listener
         window.addEventListener('orientationchange', handleOrientationChange);
         window.addEventListener('resize', handleOrientationChange);
+        
+        // Check browser recording support on load
+        function checkRecordingSupport() {
+            if (!window.MediaRecorder) {
+                statusMessage.textContent = '⚠️ Recording not supported in this browser. Try Chrome or Firefox.';
+                startBtn.disabled = true;
+                return false;
+            }
+            
+            // Check for iOS Safari limitations
+            if (isIOS && isSafari) {
+                const iosVersion = parseInt((navigator.userAgent.match(/OS (\d+)_/) || [])[1] || 0);
+                if (iosVersion < 14) {
+                    statusMessage.textContent = '⚠️ Recording requires iOS 14+. Preview mode available.';
+                }
+            }
+            
+            return true;
+        }
+        
+        // Run support check
+        checkRecordingSupport();
         
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
