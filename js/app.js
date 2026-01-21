@@ -316,18 +316,48 @@ function handleAudioUpload(e) {
 function handleOverlayUpload(e, index) {
     const file = e.target.files[0];
     if (file) {
+        // UI Feedback: Loading
+        const label = document.querySelector(`label[for="overlay${index + 1}Upload"]`);
+        if (label) label.textContent = '...';
+
         document.getElementById(`overlay${index + 1}Name`).textContent = file.name;
         const reader = new FileReader();
         reader.onload = (evt) => {
             const img = new Image();
             img.onload = () => {
-                overlayImages[index] = img; // Only set after load
+                // Reset settings to ensure visibility (Center of canvas, decent size/opacity)
+                overlaySettings[index] = {
+                    x: visualizer.canvas.width / 2 - 100, // Approximate center
+                    y: visualizer.canvas.height / 2 - 100,
+                    size: 50,
+                    opacity: 100,
+                    isDragging: false,
+                    dragOffset: { x: 0, y: 0 }
+                };
+
+                // Update specific UI controls to match new defaults
+                const sizeInput = document.getElementById(`overlay${index + 1}Size`);
+                const opInput = document.getElementById(`overlay${index + 1}Opacity`);
+                if (sizeInput) { sizeInput.value = 50; document.getElementById(`overlay${index + 1}SizeValue`).textContent = 50; }
+                if (opInput) { opInput.value = 100; document.getElementById(`overlay${index + 1}OpacityValue`).textContent = 100; }
+
+                overlayImages[index] = img;
                 visualizer.drawInitialState();
-                console.log(`Overlay ${index + 1} loaded`, img.width, img.height);
+                saveSettings(); // Persist the reset
+
+                // UI Feedback: Success
+                if (label) {
+                    label.textContent = '✓';
+                    label.classList.add('bg-green-500', 'text-white');
+                    label.classList.remove('bg-white/10');
+                }
+
+                // Show remove button
+                document.getElementById(`overlay${index + 1}Remove`).classList.remove('hidden');
             };
             img.onerror = (err) => {
                 console.error(`Overlay ${index + 1} failed to load`, err);
-                document.getElementById(`overlay${index + 1}Name`).textContent = 'Load Error';
+                if (label) label.textContent = '❌';
             };
             img.src = evt.target.result;
         };
@@ -339,7 +369,18 @@ function removeOverlay(index) {
     overlayImages[index] = null;
     document.getElementById(`overlay${index + 1}Upload`).value = '';
     document.getElementById(`overlay${index + 1}Name`).textContent = '';
+
+    // Reset UI Feedback
+    const label = document.querySelector(`label[for="overlay${index + 1}Upload"]`);
+    if (label) {
+        label.textContent = `+${index + 1}`;
+        label.classList.remove('bg-green-500', 'text-white');
+        label.classList.add('bg-white/10');
+    }
+    document.getElementById(`overlay${index + 1}Remove`).classList.add('hidden');
+
     visualizer.drawInitialState();
+    saveSettings();
 }
 
 function checkFilesReady() {
