@@ -1,0 +1,13 @@
+{
+  "name": "4ourmedia-visualizer",
+  "version": "1.0.0",
+  "description": "Premium Audio Visualizer for 4ourmedia",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.22.1"
+  }
+}
