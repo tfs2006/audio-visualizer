@@ -301,11 +301,11 @@ class AudioVisualizer {
         };
 
         if (this.settings.colorTheme === 'rainbow') {
-            const colors = [];
-            for (let i = 0; i < 3; i++) {
-                const hue = (this.animationFrame * this.settings.animationSpeed + i * 120) % 360;
-                colors.push(`hsla(${hue}, 80%, 60%, 0.8)`);
-            }
+            const colors = [
+                `hsla(${(this.animationFrame * this.settings.animationSpeed) % 360}, 80%, 60%, 0.8)`,
+                `hsla(${(this.animationFrame * this.settings.animationSpeed + 120) % 360}, 80%, 60%, 0.8)`,
+                `hsla(${(this.animationFrame * this.settings.animationSpeed + 240) % 360}, 80%, 60%, 0.8)`
+            ];
             return colors;
         }
         return schemes[this.settings.colorTheme] || schemes.default;

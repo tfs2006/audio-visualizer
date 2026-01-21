@@ -631,7 +631,6 @@ function drawOverlays(ctx) {
     }
 
     // Draw Text
-    // Draw Text
     for (let i = 0; i < textOverlays.length; i++) {
         const text = textOverlays[i];
         if (text && text.content) {
