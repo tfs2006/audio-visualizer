@@ -18,14 +18,15 @@ let overlaySettings = Array(5).fill(null).map((_, i) => ({
     y: 100 + (i * 50),
     size: 50,
     opacity: 80,
+    audioReactive: false,
     isDragging: false,
     dragOffset: { x: 0, y: 0 }
 }));
 let activeOverlay = null;
 
 let textOverlays = [
-    { content: '', x: 100, y: 100, size: 32, color: '#ffffff', font: 'Inter', style: 'normal', shadow: true, isDragging: false, dragOffset: { x: 0, y: 0 } },
-    { content: '', x: 100, y: 150, size: 24, color: '#cccccc', font: 'Inter', style: 'normal', shadow: true, isDragging: false, dragOffset: { x: 0, y: 0 } }
+    { content: '', x: 100, y: 100, size: 32, color: '#ffffff', font: 'Inter', style: 'normal', shadow: true, audioReactive: false, isDragging: false, dragOffset: { x: 0, y: 0 } },
+    { content: '', x: 100, y: 150, size: 24, color: '#cccccc', font: 'Inter', style: 'normal', shadow: true, audioReactive: false, isDragging: false, dragOffset: { x: 0, y: 0 } }
 ];
 let activeTextOverlay = null;
 
@@ -163,6 +164,7 @@ function loadSettings() {
             for (let i = 0; i < 5; i++) {
                 const elSize = document.getElementById(`overlay${i + 1}Size`);
                 const elOp = document.getElementById(`overlay${i + 1}Opacity`);
+                const elReact = document.getElementById(`overlay${i + 1}Reactive`);
                 if (elSize && overlaySettings[i]) {
                     elSize.value = overlaySettings[i].size;
                     document.getElementById(`overlay${i + 1}SizeValue`).textContent = overlaySettings[i].size;
@@ -170,6 +172,9 @@ function loadSettings() {
                 if (elOp && overlaySettings[i]) {
                     elOp.value = overlaySettings[i].opacity;
                     document.getElementById(`overlay${i + 1}OpacityValue`).textContent = overlaySettings[i].opacity;
+                }
+                if (elReact && overlaySettings[i]) {
+                    elReact.checked = overlaySettings[i].audioReactive || false;
                 }
             }
 
@@ -183,6 +188,7 @@ function loadSettings() {
                     document.getElementById(`text${i + 1}Font`).value = text.font || 'Inter';
                     document.getElementById(`text${i + 1}Style`).value = text.style || 'normal';
                     document.getElementById(`text${i + 1}Shadow`).checked = text.shadow !== false;
+                    document.getElementById(`text${i + 1}Reactive`).checked = text.audioReactive || false;
                 }
             }
 
@@ -301,6 +307,10 @@ function setupEventListeners() {
             visualizer.drawInitialState();
         });
         document.getElementById(`overlay${i}Remove`).addEventListener('click', () => removeOverlay(i - 1));
+        document.getElementById(`overlay${i}Reactive`).addEventListener('change', (e) => {
+            overlaySettings[i - 1].audioReactive = e.target.checked;
+            saveSettings();
+        });
     }
 
     // Text Overlay Controls
@@ -590,32 +600,62 @@ function updateProgressLoop() {
 
 // --- Overlay Drawing & Interaction ---
 function drawOverlays(ctx) {
+    const bass = visualizer.getBassLevel();
+    const scale = 1 + (bass / 255) * 0.2; // Max 20% scale
+
     // Draw Images
     for (let i = 0; i < overlayImages.length; i++) {
         const img = overlayImages[i];
         if (img && img.complete && img.naturalWidth > 0) {
             const sett = overlaySettings[i];
-            const w = (img.width * sett.size) / 100;
-            const h = (img.height * sett.size) / 100;
+
+            let finalScale = 1;
+            if (sett.audioReactive) finalScale = scale;
+
+            const w = (img.width * sett.size) / 100 * finalScale;
+            const h = (img.height * sett.size) / 100 * finalScale;
+            // Center scaling? The current logic draws top-left at x,y. 
+            // To scale from center, we need to adjust x,y.
+            // Current draw: ctx.drawImage(img, sett.x, sett.y, w, h);
+            // This means it grows down-right.
+            // Better: draw from center.
+            const cx = sett.x + ((img.width * sett.size) / 100) / 2;
+            const cy = sett.y + ((img.height * sett.size) / 100) / 2;
+
             ctx.globalAlpha = sett.opacity / 100;
-            ctx.drawImage(img, sett.x, sett.y, w, h);
+            ctx.drawImage(img, cx - w / 2, cy - h / 2, w, h);
             ctx.globalAlpha = 1.0;
+
+
         }
     }
 
     // Draw Text
-    for (const t of textOverlays) {
-        if (t.content) {
-            ctx.font = `${t.style} ${t.size}px ${t.font}`;
-            ctx.fillStyle = t.color;
-            if (t.shadow) {
-                ctx.shadowColor = 'rgba(0,0,0,0.7)';
+    // Draw Text
+    for (let i = 0; i < textOverlays.length; i++) {
+        const text = textOverlays[i];
+        if (text && text.content) {
+            let fontSize = text.size;
+            if (text.audioReactive) {
+                fontSize = text.size * scale;
+            }
+
+            ctx.font = `${text.style === 'bold' ? 'bold' : 'normal'} ${fontSize}px ${text.font}`;
+            ctx.fillStyle = text.color;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+
+            if (text.shadow) {
+                ctx.shadowColor = 'rgba(0,0,0,0.8)';
                 ctx.shadowBlur = 4;
                 ctx.shadowOffsetX = 2;
                 ctx.shadowOffsetY = 2;
+            } else {
+                ctx.shadowColor = 'transparent';
             }
-            ctx.fillText(t.content, t.x, t.y);
-            ctx.shadowColor = 'transparent';
+
+            ctx.fillText(text.content, text.x, text.y);
+            ctx.shadowColor = 'transparent'; // Reset
         }
     }
 }

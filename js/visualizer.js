@@ -278,6 +278,16 @@ class AudioVisualizer {
         this.backgroundNeedsUpdate = false;
     }
 
+    getBassLevel() {
+        if (!this.dataArray) return 0;
+
+        let bassSum = 0;
+        const bassBins = Math.floor(this.bufferLength * 0.1); // Low 10%
+        for (let i = 0; i < bassBins; i++) {
+            bassSum += this.dataArray[i];
+        }
+        return bassSum / bassBins; // Average 0-255
+    }
     // --- Drawing Helpers ---
     getColorScheme() {
         const schemes = {
