@@ -319,9 +319,17 @@ function handleOverlayUpload(e, index) {
         document.getElementById(`overlay${index + 1}Name`).textContent = file.name;
         const reader = new FileReader();
         reader.onload = (evt) => {
-            overlayImages[index] = new Image();
-            overlayImages[index].onload = () => visualizer.drawInitialState();
-            overlayImages[index].src = evt.target.result;
+            const img = new Image();
+            img.onload = () => {
+                overlayImages[index] = img; // Only set after load
+                visualizer.drawInitialState();
+                console.log(`Overlay ${index + 1} loaded`, img.width, img.height);
+            };
+            img.onerror = (err) => {
+                console.error(`Overlay ${index + 1} failed to load`, err);
+                document.getElementById(`overlay${index + 1}Name`).textContent = 'Load Error';
+            };
+            img.src = evt.target.result;
         };
         reader.readAsDataURL(file);
     }
@@ -502,7 +510,7 @@ function drawOverlays(ctx) {
     // Draw Images
     for (let i = 0; i < overlayImages.length; i++) {
         const img = overlayImages[i];
-        if (img) {
+        if (img && img.complete && img.naturalWidth > 0) {
             const sett = overlaySettings[i];
             const w = (img.width * sett.size) / 100;
             const h = (img.height * sett.size) / 100;
