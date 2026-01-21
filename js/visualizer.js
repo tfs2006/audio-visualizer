@@ -26,6 +26,7 @@ class AudioVisualizer {
             barCount: 64,
             mirrorMode: 'none',
             glowIntensity: 0,
+            bassShake: 0,
             frameRate: 30
         };
 
@@ -189,8 +190,32 @@ class AudioVisualizer {
     }
 
     drawBackgroundOnly() {
+        this.ctx.save(); // Save state for transformations (shake)
         this.ctx.fillStyle = '#1f2937'; // Fallback
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Bass Shake Calculation
+        if (this.settings.bassShake > 0 && this.dataArray) {
+            // Calculate bass energy (first ~10% of bins)
+            let bassSum = 0;
+            const bassBins = Math.floor(this.bufferLength * 0.1);
+            for (let i = 0; i < bassBins; i++) {
+                bassSum += this.dataArray[i];
+            }
+            const bassAvg = bassSum / bassBins;
+
+            // Normalize (0-1) and apply intensity
+            // Threshold: only shake on hits > 100/255
+            if (bassAvg > 100) {
+                const shakeFactor = ((bassAvg - 100) / 155) * (this.settings.bassShake / 100) * 0.1; // Max 10% zoom
+                const scale = 1 + shakeFactor;
+
+                // Center zoom
+                this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
+                this.ctx.scale(scale, scale);
+                this.ctx.translate(-this.canvas.width / 2, -this.canvas.height / 2);
+            }
+        }
 
         const media = this.backgroundVideo || this.backgroundImage;
 
@@ -222,6 +247,7 @@ class AudioVisualizer {
                 this.ctx.fillText('Upload an image/video to preview', this.canvas.width / 2, this.canvas.height / 2);
             }
         }
+        this.ctx.restore(); // Restore shake transforms
     }
 
     updateCachedBackground() {

@@ -57,7 +57,8 @@ const elements = {
     glowIntensity: document.getElementById('glowIntensity'),
     videoQuality: document.getElementById('videoQuality'),
     frameRate: document.getElementById('frameRate'),
-    exportFormat: document.getElementById('exportFormat')
+    exportFormat: document.getElementById('exportFormat'),
+    bassShake: document.getElementById('bassShake')
 };
 
 // --- Initialization ---
@@ -92,7 +93,9 @@ function saveSettings() {
         position: visualizer.settings.position,
         barCount: visualizer.settings.barCount,
         mirrorMode: visualizer.settings.mirrorMode,
+        mirrorMode: visualizer.settings.mirrorMode,
         glowIntensity: visualizer.settings.glowIntensity,
+        bassShake: visualizer.settings.bassShake,
         videoQuality: elements.videoQuality.value,
         frameRate: elements.frameRate.value,
         exportFormat: elements.exportFormat.value,
@@ -134,6 +137,10 @@ function loadSettings() {
             if (s.barCount) elements.barCount.value = s.barCount;
             if (s.mirrorMode) elements.mirrorMode.value = s.mirrorMode;
             if (s.glowIntensity) elements.glowIntensity.value = s.glowIntensity;
+            if (s.bassShake) {
+                elements.bassShake.value = s.bassShake;
+                document.getElementById('bassShakeValue').textContent = s.bassShake;
+            }
             if (s.videoQuality) elements.videoQuality.value = s.videoQuality;
             if (s.frameRate) elements.frameRate.value = s.frameRate;
             if (s.exportFormat) elements.exportFormat.value = s.exportFormat;
@@ -220,6 +227,12 @@ function setupEventListeners() {
     elements.glowIntensity.addEventListener('input', (e) => {
         visualizer.updateSettings({ glowIntensity: parseInt(e.target.value) });
         document.getElementById('glowIntensityValue').textContent = e.target.value;
+        saveSettings();
+        visualizer.drawInitialState();
+    });
+    elements.bassShake.addEventListener('input', (e) => {
+        visualizer.updateSettings({ bassShake: parseInt(e.target.value) });
+        document.getElementById('bassShakeValue').textContent = e.target.value;
         saveSettings();
         visualizer.drawInitialState();
     });
