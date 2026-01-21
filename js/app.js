@@ -58,7 +58,11 @@ const elements = {
     videoQuality: document.getElementById('videoQuality'),
     frameRate: document.getElementById('frameRate'),
     exportFormat: document.getElementById('exportFormat'),
-    bassShake: document.getElementById('bassShake')
+    bassShake: document.getElementById('bassShake'),
+    // Presets
+    presetTikTok: document.getElementById('presetTikTok'),
+    presetInsta: document.getElementById('presetInsta'),
+    presetYoutube: document.getElementById('presetYoutube')
 };
 
 // --- Initialization ---
@@ -238,6 +242,29 @@ function setupEventListeners() {
     });
 
     // Export Settings
+    const setAspectRatio = (width, height, activeBtn) => {
+        visualizer.updateSettings({ width, height });
+
+        // Update UI
+        [elements.presetTikTok, elements.presetInsta, elements.presetYoutube].forEach(btn => {
+            btn.classList.remove('bg-blue-600', 'border-blue-500');
+            btn.classList.add('hover:bg-white/10');
+            if (btn.id !== 'presetYoutube') btn.classList.remove('bg-white/10', 'border-white/20'); // Reset others
+        });
+
+        activeBtn.classList.remove('bg-white/10', 'hover:bg-white/10');
+        activeBtn.classList.add('bg-blue-600', 'border-blue-500');
+
+        // Disable standard quality dropdown if not standard ratio?
+        // simple approach: just set dimensions.
+        saveSettings();
+        visualizer.drawInitialState();
+    };
+
+    elements.presetTikTok.addEventListener('click', () => setAspectRatio(1080, 1920, elements.presetTikTok));
+    elements.presetInsta.addEventListener('click', () => setAspectRatio(1080, 1080, elements.presetInsta));
+    elements.presetYoutube.addEventListener('click', () => setAspectRatio(1920, 1080, elements.presetYoutube));
+
     elements.videoQuality.addEventListener('change', () => {
         const qualityMap = { '720p': { width: 1280, height: 720 }, '1080p': { width: 1920, height: 1080 }, '4k': { width: 3840, height: 2160 } };
         const s = qualityMap[elements.videoQuality.value];
