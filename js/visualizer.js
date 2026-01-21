@@ -35,6 +35,7 @@ class AudioVisualizer {
         this.targetFrameInterval = 1000 / 30;
         this.animationFrame = 0;
         this.backgroundImage = null;
+        this.backgroundVideo = null;
         this.cachedBackground = null;
         this.backgroundNeedsUpdate = true;
 
@@ -64,8 +65,31 @@ class AudioVisualizer {
 
     setBackground(image) {
         this.backgroundImage = image;
+        this.backgroundVideo = null;
         this.backgroundNeedsUpdate = true;
         if (!this.animationFrameId) this.drawInitialState();
+    }
+
+    setBackgroundVideo(url) {
+        if (this.backgroundVideo) {
+            this.backgroundVideo.pause();
+            this.backgroundVideo.src = '';
+            this.backgroundVideo = null;
+        }
+
+        const video = document.createElement('video');
+        video.src = url;
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+
+        video.onloadedmetadata = () => {
+            video.play().catch(e => console.warn("Video play failed", e));
+            this.backgroundVideo = video;
+            this.backgroundImage = null;
+            this.backgroundNeedsUpdate = true;
+            if (!this.animationFrameId) this.drawInitialState();
+        };
     }
 
     async setupAudio() {
@@ -86,6 +110,7 @@ class AudioVisualizer {
     }
 
     start() {
+        if (this.backgroundVideo) this.backgroundVideo.play();
         if (!this.audioContext) {
             this.setupAudio().then(() => this.loop());
         } else {
@@ -99,6 +124,7 @@ class AudioVisualizer {
             cancelAnimationFrame(this.animationFrameId);
             this.animationFrameId = null;
         }
+        if (this.backgroundVideo) this.backgroundVideo.pause();
         this.drawInitialState();
     }
 
@@ -107,6 +133,7 @@ class AudioVisualizer {
             cancelAnimationFrame(this.animationFrameId);
             this.animationFrameId = null;
         }
+        if (this.backgroundVideo) this.backgroundVideo.pause();
     }
 
     loop(timestamp) {
@@ -125,13 +152,18 @@ class AudioVisualizer {
 
     draw() {
         // Draw Background
-        if (this.backgroundNeedsUpdate || !this.cachedBackground) {
-            this.updateCachedBackground();
-        }
-        if (this.cachedBackground) {
-            this.ctx.drawImage(this.cachedBackground, 0, 0);
-        } else {
+        // If video is playing, force redraw every frame (no caching)
+        if (this.backgroundVideo) {
             this.drawBackgroundOnly();
+        } else {
+            if (this.backgroundNeedsUpdate || !this.cachedBackground) {
+                this.updateCachedBackground();
+            }
+            if (this.cachedBackground) {
+                this.ctx.drawImage(this.cachedBackground, 0, 0);
+            } else {
+                this.drawBackgroundOnly();
+            }
         }
 
         // Draw Visualizer
@@ -160,26 +192,34 @@ class AudioVisualizer {
         this.ctx.fillStyle = '#1f2937'; // Fallback
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        if (this.backgroundImage) {
-            const canvasAspect = this.canvas.width / this.canvas.height;
-            const imgAspect = this.backgroundImage.width / this.backgroundImage.height;
-            let sx = 0, sy = 0, sWidth = this.backgroundImage.width, sHeight = this.backgroundImage.height;
+        const media = this.backgroundVideo || this.backgroundImage;
 
-            if (imgAspect > canvasAspect) {
-                sWidth = this.backgroundImage.height * canvasAspect;
-                sx = (this.backgroundImage.width - sWidth) / 2;
-            } else {
-                sHeight = this.backgroundImage.width / canvasAspect;
-                sy = (this.backgroundImage.height - sHeight) / 2;
+        if (media) {
+            // Check if media is valid/loaded
+            const mediaWidth = media.videoWidth || media.width;
+            const mediaHeight = media.videoHeight || media.height;
+
+            if (mediaWidth > 0 && mediaHeight > 0) {
+                const canvasAspect = this.canvas.width / this.canvas.height;
+                const imgAspect = mediaWidth / mediaHeight;
+                let sx = 0, sy = 0, sWidth = mediaWidth, sHeight = mediaHeight;
+
+                if (imgAspect > canvasAspect) {
+                    sWidth = mediaHeight * canvasAspect;
+                    sx = (mediaWidth - sWidth) / 2;
+                } else {
+                    sHeight = mediaWidth / canvasAspect;
+                    sy = (mediaHeight - sHeight) / 2;
+                }
+                this.ctx.drawImage(media, sx, sy, sWidth, sHeight, 0, 0, this.canvas.width, this.canvas.height);
             }
-            this.ctx.drawImage(this.backgroundImage, sx, sy, sWidth, sHeight, 0, 0, this.canvas.width, this.canvas.height);
         } else {
             // Placeholder text if no image
             if (!this.animationFrameId) {
                 this.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
                 this.ctx.font = '30px Inter';
                 this.ctx.textAlign = 'center';
-                this.ctx.fillText('Upload an image to preview', this.canvas.width / 2, this.canvas.height / 2);
+                this.ctx.fillText('Upload an image/video to preview', this.canvas.width / 2, this.canvas.height / 2);
             }
         }
     }
@@ -190,7 +230,6 @@ class AudioVisualizer {
         offscreen.height = this.canvas.height;
         const offCtx = offscreen.getContext('2d');
 
-        // Draw background color/image logic here (duplicated from drawBackgroundOnly for offscreen)
         offCtx.fillStyle = '#050510';
         offCtx.fillRect(0, 0, offscreen.width, offscreen.height);
 

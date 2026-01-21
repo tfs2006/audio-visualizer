@@ -290,16 +290,18 @@ function handleImageUpload(e) {
     const file = e.target.files[0];
     if (file) {
         document.getElementById('imageFileName').textContent = file.name;
-        const reader = new FileReader();
-        reader.onload = (evt) => {
+        const url = URL.createObjectURL(file);
+
+        if (file.type.startsWith('video/')) {
+            visualizer.setBackgroundVideo(url);
+        } else {
             const img = new Image();
             img.onload = () => {
                 visualizer.setBackground(img);
                 checkFilesReady();
             };
-            img.src = evt.target.result;
-        };
-        reader.readAsDataURL(file);
+            img.src = url;
+        }
     }
 }
 
