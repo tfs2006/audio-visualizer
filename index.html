@@ -1,0 +1,2178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Audio Visualizer Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overscroll-behavior: none;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        #visualizerCanvas {
+            aspect-ratio: 16 / 9;
+            width: 100%;
+            height: auto;
+            max-height: 70vh;
+            object-fit: contain;
+        }
+        .btn {
+            @apply w-full sm:w-auto text-white font-bold py-3 px-8 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed;
+            -webkit-appearance: none;
+            appearance: none;
+            touch-action: manipulation;
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+        .file-upload-box {
+            transition: all 0.3s ease;
+        }
+        .file-upload-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        .progress-bar {
+            height: 6px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 0%; }
+        }
+        .overlay-item {
+            background: rgba(75, 85, 99, 0.9);
+            border: 1px solid rgba(156, 163, 175, 0.5);
+            backdrop-filter: blur(10px);
+        }
+        .overlay-item:hover {
+            background: rgba(75, 85, 99, 1);
+            border-color: rgba(156, 163, 175, 0.8);
+        }
+        .overlay-controls {
+            display: none;
+        }
+        .overlay-item:hover .overlay-controls {
+            display: flex;
+        }
+        .export-options {
+            background: rgba(55, 65, 81, 0.95);
+            border: 1px solid rgba(75, 85, 99, 0.8);
+            backdrop-filter: blur(20px);
+        }
+        .quality-indicator {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+        .progress-container {
+            background: rgba(31, 41, 55, 0.9);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+        /* Better range input styling */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+            height: 44px;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            background: #4b5563;
+            height: 8px;
+            border-radius: 4px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: -10px;
+            background-color: #3b82f6;
+            height: 28px;
+            width: 28px;
+            border-radius: 50%;
+            border: 2px solid #1f2937;
+        }
+        input[type="range"]::-moz-range-track {
+            background: #4b5563;
+            height: 8px;
+            border-radius: 4px;
+        }
+        input[type="range"]::-moz-range-thumb {
+            background-color: #3b82f6;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            border: 2px solid #1f2937;
+        }
+        /* Audio player styling */
+        audio {
+            width: 100%;
+            height: 44px;
+            border-radius: 8px;
+        }
+        audio::-webkit-media-controls-panel {
+            background: #374151;
+        }
+        /* Select styling */
+        select {
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+        /* Tablet styles */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .grid.lg\\:grid-cols-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .grid.lg\\:grid-cols-5 {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (max-width: 768px) {
+            .overlay-controls {
+                display: flex !important;
+            }
+            .btn {
+                font-size: 0.875rem;
+                padding: 0.75rem 1rem;
+                min-height: 48px;
+            }
+            #controls {
+                gap: 8px;
+            }
+            .file-upload-box {
+                padding: 1rem;
+            }
+            h1 {
+                font-size: 1.75rem !important;
+            }
+            .export-options, .bg-gray-700 {
+                padding: 1rem;
+            }
+            canvas {
+                touch-action: none;
+            }
+            /* Improve text overlay controls on mobile */
+            .grid.md\\:grid-cols-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 480px) {
+            .grid.lg\\:grid-cols-5 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .grid.md\\:grid-cols-3, .grid.md\\:grid-cols-4 {
+                grid-template-columns: 1fr;
+            }
+            .grid.sm\\:grid-cols-2 {
+                grid-template-columns: 1fr;
+            }
+            .btn {
+                width: 100%;
+                font-size: 0.875rem;
+            }
+            h1 {
+                font-size: 1.5rem !important;
+            }
+            .p-6, .md\\:p-8 {
+                padding: 0.75rem !important;
+            }
+            /* Stack buttons vertically on very small screens */
+            #controls {
+                flex-direction: column;
+            }
+            #controls .btn {
+                margin: 0;
+            }
+        }
+        /* High DPI displays */
+        @media (min-resolution: 2dppx) {
+            canvas {
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: crisp-edges;
+            }
+        }
+        /* Landscape orientation on mobile */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .min-h-screen {
+                min-height: auto;
+            }
+            .p-4 {
+                padding: 0.5rem;
+            }
+            #visualizerCanvas {
+                max-height: 50vh;
+            }
+            header {
+                margin-bottom: 0.5rem !important;
+            }
+            header h1 {
+                font-size: 1.25rem !important;
+            }
+            header p {
+                display: none;
+            }
+        }
+        /* Touch improvements */
+        .touch-target {
+            min-height: 44px;
+            min-width: 44px;
+        }
+        /* Prevent zoom on input focus (iOS) */
+        input[type="range"], input[type="file"], input[type="text"], input[type="color"], select, textarea {
+            font-size: 16px;
+        }
+        /* Safe area padding for notched devices */
+        @supports (padding: env(safe-area-inset-left)) {
+            body {
+                padding-left: env(safe-area-inset-left);
+                padding-right: env(safe-area-inset-right);
+            }
+        }
+        /* Fullscreen styles */
+        :fullscreen #visualizerCanvas,
+        :-webkit-full-screen #visualizerCanvas {
+            max-height: 100vh;
+            width: 100vw;
+            height: 100vh;
+            object-fit: contain;
+        }
+        /* Loading state */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        /* Focus styles for accessibility */
+        button:focus-visible, select:focus-visible, input:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+        /* Disabled state improvement */
+        button:disabled, input:disabled, select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-4xl mx-auto">
+        <header class="text-center mb-4 sm:mb-8">
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white">Audio Visualizer Generator</h1>
+            <p class="mt-2 sm:mt-4 text-base sm:text-lg text-gray-400">Create multiple video clips from a single audio file.</p>
+        </header>
+
+        <main class="bg-gray-800 rounded-xl shadow-2xl p-4 sm:p-6 md:p-8">
+            <!-- File Uploads -->
+            <div class="grid grid-cols-1 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                <div class="file-upload-box flex flex-col items-center justify-center bg-gray-700 p-4 sm:p-6 rounded-lg border-2 border-gray-600">
+                    <h2 class="text-lg sm:text-xl font-semibold mb-3">📸 Upload Background Image</h2>
+                    <input type="file" id="imageUpload" accept="image/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer touch-target" />
+                    <p id="imageFileName" class="text-xs text-gray-500 mt-2 h-4"></p>
+                </div>
+                <div class="file-upload-box flex flex-col items-center justify-center bg-gray-700 p-4 sm:p-6 rounded-lg border-2 border-gray-600">
+                    <h2 class="text-lg sm:text-xl font-semibold mb-3">🎵 Upload Audio File</h2>
+                    <input type="file" id="audioUpload" accept="audio/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer touch-target" />
+                    <p id="audioFileName" class="text-xs text-gray-500 mt-2 h-4"></p>
+                </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="mb-6 sm:mb-8">
+                <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-center">🎬 Preview</h2>
+                <div class="bg-black rounded-lg overflow-hidden shadow-lg border-2 border-gray-700">
+                    <canvas id="visualizerCanvas" width="1280" height="720" class="w-full h-auto"></canvas>
+                </div>
+                <audio id="audioPlayer" controls class="w-full mt-4 rounded-lg touch-target"></audio>
+            </div>
+            
+            <!-- Visualizer Settings -->
+            <div class="bg-gray-700 p-4 sm:p-6 rounded-lg mb-6 sm:mb-8 border-2 border-gray-600">
+                <h2 class="text-lg sm:text-xl font-semibold mb-4">🎨 Visualizer Settings</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Bar Style</label>
+                        <select id="barStyle" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 touch-target">
+                            <option value="gradient">Gradient Bars</option>
+                            <option value="solid">Solid Bars</option>
+                            <option value="circle">Circular</option>
+                            <option value="wave">Wave Form</option>
+                            <option value="spectrum">Spectrum</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Sensitivity: <span id="sensitivityValue">1.5</span></label>
+                        <input type="range" id="sensitivity" min="0.5" max="3" step="0.1" value="1.5" class="w-full touch-target">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Color Theme</label>
+                        <select id="colorTheme" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 touch-target">
+                            <option value="default">Blue-Purple-Pink</option>
+                            <option value="fire">Fire</option>
+                            <option value="ocean">Ocean</option>
+                            <option value="forest">Forest</option>
+                            <option value="sunset">Sunset</option>
+                            <option value="neon">Neon</option>
+                            <option value="rainbow">Rainbow</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Animation: <span id="animationSpeedValue">1.0</span>x</label>
+                        <input type="range" id="animationSpeed" min="0.2" max="3" step="0.1" value="1.0" class="w-full touch-target">
+                    </div>
+                </div>
+                
+                <!-- Advanced Visualizer Settings Row -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-600">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Position</label>
+                        <select id="visualizerPosition" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 touch-target">
+                            <option value="bottom">Bottom</option>
+                            <option value="center">Center</option>
+                            <option value="top">Top</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Bar Count: <span id="barCountValue">64</span></label>
+                        <input type="range" id="barCount" min="16" max="128" step="8" value="64" class="w-full touch-target">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Mirror Mode</label>
+                        <select id="mirrorMode" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 touch-target">
+                            <option value="none">None</option>
+                            <option value="horizontal">Horizontal (Left-Right)</option>
+                            <option value="vertical">Vertical (Up-Down)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Glow Effect: <span id="glowIntensityValue">0</span></label>
+                        <input type="range" id="glowIntensity" min="0" max="30" step="2" value="0" class="w-full touch-target">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Export Settings -->
+            <div class="export-options p-4 sm:p-6 rounded-lg mb-6 sm:mb-8">
+                <h2 class="text-lg sm:text-xl font-semibold mb-4">🎬 Export Settings</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Video Quality</label>
+                        <select id="videoQuality" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 touch-target">
+                            <option value="720p">720p HD (1280x720)</option>
+                            <option value="1080p">1080p Full HD (1920x1080)</option>
+                            <option value="4k">4K Ultra HD (3840x2160)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Frame Rate</label>
+                        <select id="frameRate" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 touch-target">
+                            <option value="24">24 FPS (Cinematic)</option>
+                            <option value="30" selected>30 FPS (Standard)</option>
+                            <option value="60">60 FPS (Smooth)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Export Format</label>
+                        <select id="exportFormat" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 touch-target">
+                            <option value="webm">WebM (Best Quality)</option>
+                            <option value="mp4">MP4 (Compatible)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Overlay Images -->
+            <div class="bg-gray-700 p-4 sm:p-6 rounded-lg mb-6 sm:mb-8 border-2 border-gray-600">
+                <h2 class="text-lg sm:text-xl font-semibold mb-4">🖼️ Overlay Images (Optional)</h2>
+                <p class="text-sm text-gray-400 mb-4">Add up to 5 overlay images that will appear on top of your visualizer. You can drag and resize them in the preview.</p>
+                
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-4">
+                    <div class="overlay-item p-3 sm:p-4 rounded-lg text-center">
+                        <h3 class="text-sm font-medium mb-2">Overlay 1</h3>
+                        <input type="file" id="overlay1Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2 touch-target" />
+                        <p id="overlay1Name" class="text-xs text-gray-500 h-4 mb-2 truncate"></p>
+                        <div class="overlay-controls flex-col gap-1">
+                            <label class="text-xs">Size: <span id="overlay1SizeValue">50</span>%</label>
+                            <input type="range" id="overlay1Size" min="10" max="200" value="50" class="w-full text-xs touch-target">
+                            <label class="text-xs">Opacity: <span id="overlay1OpacityValue">80</span>%</label>
+                            <input type="range" id="overlay1Opacity" min="0" max="100" value="80" class="w-full text-xs touch-target">
+                            <button id="overlay1Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1 touch-target">Remove</button>
+                        </div>
+                    </div>
+                    
+                    <div class="overlay-item p-3 sm:p-4 rounded-lg text-center">
+                        <h3 class="text-sm font-medium mb-2">Overlay 2</h3>
+                        <input type="file" id="overlay2Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2 touch-target" />
+                        <p id="overlay2Name" class="text-xs text-gray-500 h-4 mb-2 truncate"></p>
+                        <div class="overlay-controls flex-col gap-1">
+                            <label class="text-xs">Size: <span id="overlay2SizeValue">50</span>%</label>
+                            <input type="range" id="overlay2Size" min="10" max="200" value="50" class="w-full text-xs touch-target">
+                            <label class="text-xs">Opacity: <span id="overlay2OpacityValue">80</span>%</label>
+                            <input type="range" id="overlay2Opacity" min="0" max="100" value="80" class="w-full text-xs touch-target">
+                            <button id="overlay2Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1 touch-target">Remove</button>
+                        </div>
+                    </div>
+                    
+                    <div class="overlay-item p-3 sm:p-4 rounded-lg text-center">
+                        <h3 class="text-sm font-medium mb-2">Overlay 3</h3>
+                        <input type="file" id="overlay3Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2 touch-target" />
+                        <p id="overlay3Name" class="text-xs text-gray-500 h-4 mb-2 truncate"></p>
+                        <div class="overlay-controls flex-col gap-1">
+                            <label class="text-xs">Size: <span id="overlay3SizeValue">50</span>%</label>
+                            <input type="range" id="overlay3Size" min="10" max="200" value="50" class="w-full text-xs touch-target">
+                            <label class="text-xs">Opacity: <span id="overlay3OpacityValue">80</span>%</label>
+                            <input type="range" id="overlay3Opacity" min="0" max="100" value="80" class="w-full text-xs touch-target">
+                            <button id="overlay3Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1 touch-target">Remove</button>
+                        </div>
+                    </div>
+                    
+                    <div class="overlay-item p-3 sm:p-4 rounded-lg text-center">
+                        <h3 class="text-sm font-medium mb-2">Overlay 4</h3>
+                        <input type="file" id="overlay4Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2 touch-target" />
+                        <p id="overlay4Name" class="text-xs text-gray-500 h-4 mb-2 truncate"></p>
+                        <div class="overlay-controls flex-col gap-1">
+                            <label class="text-xs">Size: <span id="overlay4SizeValue">50</span>%</label>
+                            <input type="range" id="overlay4Size" min="10" max="200" value="50" class="w-full text-xs touch-target">
+                            <label class="text-xs">Opacity: <span id="overlay4OpacityValue">80</span>%</label>
+                            <input type="range" id="overlay4Opacity" min="0" max="100" value="80" class="w-full text-xs touch-target">
+                            <button id="overlay4Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1 touch-target">Remove</button>
+                        </div>
+                    </div>
+                    
+                    <div class="overlay-item p-3 sm:p-4 rounded-lg text-center">
+                        <h3 class="text-sm font-medium mb-2">Overlay 5</h3>
+                        <input type="file" id="overlay5Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2 touch-target" />
+                        <p id="overlay5Name" class="text-xs text-gray-500 h-4 mb-2 truncate"></p>
+                        <div class="overlay-controls flex-col gap-1">
+                            <label class="text-xs">Size: <span id="overlay5SizeValue">50</span>%</label>
+                            <input type="range" id="overlay5Size" min="10" max="200" value="50" class="w-full text-xs touch-target">
+                            <label class="text-xs">Opacity: <span id="overlay5OpacityValue">80</span>%</label>
+                            <input type="range" id="overlay5Opacity" min="0" max="100" value="80" class="w-full text-xs touch-target">
+                            <button id="overlay5Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1 touch-target">Remove</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <p class="text-xs text-gray-400">💡 Tip: Click and drag overlay images in the preview to reposition them</p>
+                </div>
+            </div>
+            
+            <!-- Text Overlays -->
+            <div class="bg-gray-700 p-4 sm:p-6 rounded-lg mb-6 sm:mb-8 border-2 border-gray-600">
+                <h2 class="text-lg sm:text-xl font-semibold mb-4">📝 Text Overlays</h2>
+                <p class="text-sm text-gray-400 mb-4">Add text like song title, artist name, or custom messages. Drag text in the preview to reposition.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Text Overlay 1 -->
+                    <div class="bg-gray-600 p-4 rounded-lg">
+                        <h3 class="text-sm font-medium mb-3">Text 1 (e.g., Song Title)</h3>
+                        <input type="text" id="text1Content" placeholder="Enter text..." class="w-full bg-gray-800 text-white border border-gray-500 rounded px-3 py-2 mb-2 text-sm" maxlength="100">
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <div>
+                                <label class="text-xs text-gray-400">Font Size</label>
+                                <input type="range" id="text1Size" min="12" max="72" value="32" class="w-full touch-target">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Color</label>
+                                <input type="color" id="text1Color" value="#ffffff" class="w-full h-8 rounded cursor-pointer">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-xs text-gray-400">Font</label>
+                                <select id="text1Font" class="w-full bg-gray-800 text-white border border-gray-500 rounded px-2 py-1 text-xs">
+                                    <option value="Inter">Inter</option>
+                                    <option value="Arial">Arial</option>
+                                    <option value="Georgia">Georgia</option>
+                                    <option value="Courier New">Courier New</option>
+                                    <option value="Impact">Impact</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Style</label>
+                                <select id="text1Style" class="w-full bg-gray-800 text-white border border-gray-500 rounded px-2 py-1 text-xs">
+                                    <option value="normal">Normal</option>
+                                    <option value="bold">Bold</option>
+                                    <option value="italic">Italic</option>
+                                    <option value="bold italic">Bold Italic</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <label class="text-xs text-gray-400">Shadow</label>
+                            <input type="checkbox" id="text1Shadow" checked class="ml-2">
+                        </div>
+                    </div>
+                    
+                    <!-- Text Overlay 2 -->
+                    <div class="bg-gray-600 p-4 rounded-lg">
+                        <h3 class="text-sm font-medium mb-3">Text 2 (e.g., Artist Name)</h3>
+                        <input type="text" id="text2Content" placeholder="Enter text..." class="w-full bg-gray-800 text-white border border-gray-500 rounded px-3 py-2 mb-2 text-sm" maxlength="100">
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <div>
+                                <label class="text-xs text-gray-400">Font Size</label>
+                                <input type="range" id="text2Size" min="12" max="72" value="24" class="w-full touch-target">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Color</label>
+                                <input type="color" id="text2Color" value="#cccccc" class="w-full h-8 rounded cursor-pointer">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-xs text-gray-400">Font</label>
+                                <select id="text2Font" class="w-full bg-gray-800 text-white border border-gray-500 rounded px-2 py-1 text-xs">
+                                    <option value="Inter">Inter</option>
+                                    <option value="Arial">Arial</option>
+                                    <option value="Georgia">Georgia</option>
+                                    <option value="Courier New">Courier New</option>
+                                    <option value="Impact">Impact</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Style</label>
+                                <select id="text2Style" class="w-full bg-gray-800 text-white border border-gray-500 rounded px-2 py-1 text-xs">
+                                    <option value="normal">Normal</option>
+                                    <option value="bold">Bold</option>
+                                    <option value="italic">Italic</option>
+                                    <option value="bold italic">Bold Italic</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <label class="text-xs text-gray-400">Shadow</label>
+                            <input type="checkbox" id="text2Shadow" checked class="ml-2">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <p class="text-xs text-gray-400">💡 Tip: Click and drag text in the preview to reposition</p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div id="controls" class="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
+                <button id="startBtn" class="btn bg-green-600 hover:bg-green-700 touch-target" disabled>🎬 Start Recording</button>
+                <button id="pauseBtn" class="btn bg-yellow-500 hover:bg-yellow-600 touch-target hidden">⏸️ Pause</button>
+                <button id="resumeBtn" class="btn bg-green-600 hover:bg-green-700 touch-target hidden">▶️ Resume</button>
+                <button id="stopBtn" class="btn bg-red-600 hover:bg-red-700 touch-target hidden">⏹️ Stop</button>
+                <button id="previewBtn" class="btn bg-purple-600 hover:bg-purple-700 touch-target">👁️ Preview Mode</button>
+                <button id="fullscreenBtn" class="btn bg-indigo-600 hover:bg-indigo-700 touch-target">🔍 Fullscreen</button>
+            </div>
+            
+            <!-- Keyboard Shortcuts Help -->
+            <div class="mt-4 text-center">
+                <button id="shortcutsToggle" class="text-xs text-gray-400 hover:text-gray-300 underline">⌨️ Keyboard Shortcuts</button>
+                <div id="shortcutsHelp" class="hidden mt-2 p-3 bg-gray-700 rounded-lg text-xs text-gray-300 inline-block">
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-left">
+                        <span><kbd class="bg-gray-600 px-1 rounded">Space</kbd> Play/Pause audio</span>
+                        <span><kbd class="bg-gray-600 px-1 rounded">R</kbd> Start/Resume recording</span>
+                        <span><kbd class="bg-gray-600 px-1 rounded">P</kbd> Pause recording</span>
+                        <span><kbd class="bg-gray-600 px-1 rounded">S</kbd> Stop recording</span>
+                        <span><kbd class="bg-gray-600 px-1 rounded">V</kbd> Toggle preview mode</span>
+                        <span><kbd class="bg-gray-600 px-1 rounded">F</kbd> Toggle fullscreen</span>
+                        <span><kbd class="bg-gray-600 px-1 rounded">Esc</kbd> Exit fullscreen/Stop</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div id="progressContainer" class="progress-container hidden mt-6 p-4 rounded-lg">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium">Recording Progress</span>
+                    <span id="recordingTime" class="text-sm text-blue-400">00:00</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2 mb-2">
+                    <div id="progressBar" class="progress-bar h-2 rounded-full" style="width: 0%"></div>
+                </div>
+                <div class="text-xs text-gray-400 text-center">
+                    <span id="progressText">Initializing...</span>
+                </div>
+            </div>
+            
+            <!-- Status & Downloads -->
+            <div class="text-center mt-6">
+                <div id="statusMessage" class="text-yellow-400 h-6 mb-4"></div>
+                <div id="downloadContainer" class="flex flex-col items-center gap-3"></div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // DOM Element References
+        const imageUpload = document.getElementById('imageUpload');
+        const audioUpload = document.getElementById('audioUpload');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resumeBtn = document.getElementById('resumeBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const downloadContainer = document.getElementById('downloadContainer');
+        const statusMessage = document.getElementById('statusMessage');
+        const canvas = document.getElementById('visualizerCanvas');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const ctx = canvas.getContext('2d');
+        const imageFileName = document.getElementById('imageFileName');
+        const audioFileName = document.getElementById('audioFileName');
+        const barStyle = document.getElementById('barStyle');
+        const sensitivity = document.getElementById('sensitivity');
+        const sensitivityValue = document.getElementById('sensitivityValue');
+        const colorTheme = document.getElementById('colorTheme');
+        const animationSpeed = document.getElementById('animationSpeed');
+        const animationSpeedValue = document.getElementById('animationSpeedValue');
+        const videoQuality = document.getElementById('videoQuality');
+        const frameRate = document.getElementById('frameRate');
+        const exportFormat = document.getElementById('exportFormat');
+        const previewBtn = document.getElementById('previewBtn');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const recordingTime = document.getElementById('recordingTime');
+        const progressText = document.getElementById('progressText');
+
+        // State variables
+        let audioContext, analyser, source, dataArray, bufferLength;
+        let backgroundImage = null;
+        let audioSrc = null;
+        let animationFrameId;
+        let mediaRecorder;
+        let recordedChunks = [];
+        let appState = 'idle'; // idle, recording, paused
+        let clipCounter = 0;
+        let currentSensitivity = 1.5;
+        let currentBarStyle = 'gradient';
+        let currentColorTheme = 'default';
+        let currentAnimationSpeed = 1.0;
+        let currentPosition = 'bottom';
+        let currentBarCount = 64;
+        let currentMirrorMode = 'none';
+        let currentGlowIntensity = 0;
+        let isPreviewMode = false;
+        let startTime = null;
+        let animationFrame = 0;
+        
+        // Performance optimization variables
+        let lastFrameTime = 0;
+        let targetFrameInterval = 1000 / 30; // Default 30fps
+        let cachedBackground = null;
+        let backgroundNeedsUpdate = true;
+        
+        // Device detection
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        
+        // Adjust default settings for mobile
+        if (isMobile) {
+            targetFrameInterval = 1000 / 24; // Lower framerate on mobile for performance
+        }
+        
+        // Overlay system
+        let overlayImages = Array(5).fill(null);
+        let overlaySettings = Array(5).fill(null).map((_, i) => ({
+            x: 100 + (i * 50), // Default positions spread out
+            y: 100 + (i * 50),
+            size: 50,
+            opacity: 80,
+            isDragging: false,
+            dragOffset: { x: 0, y: 0 }
+        }));
+        let activeOverlay = null;
+        
+        // Text overlay system
+        let textOverlays = [
+            { content: '', x: 100, y: 100, size: 32, color: '#ffffff', font: 'Inter', style: 'normal', shadow: true, isDragging: false, dragOffset: { x: 0, y: 0 } },
+            { content: '', x: 100, y: 150, size: 24, color: '#cccccc', font: 'Inter', style: 'normal', shadow: true, isDragging: false, dragOffset: { x: 0, y: 0 } }
+        ];
+        let activeTextOverlay = null;
+        
+        // LocalStorage key
+        const STORAGE_KEY = 'audioVisualizerSettings';
+        
+        // Save settings to localStorage
+        function saveSettings() {
+            const settings = {
+                barStyle: currentBarStyle,
+                sensitivity: currentSensitivity,
+                colorTheme: currentColorTheme,
+                animationSpeed: currentAnimationSpeed,
+                position: currentPosition,
+                barCount: currentBarCount,
+                mirrorMode: currentMirrorMode,
+                glowIntensity: currentGlowIntensity,
+                videoQuality: videoQuality.value,
+                frameRate: frameRate.value,
+                exportFormat: exportFormat.value,
+                overlaySettings: overlaySettings,
+                textOverlays: textOverlays
+            };
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+            } catch (e) {
+                console.warn('Could not save settings to localStorage:', e);
+            }
+        }
+        
+        // Load settings from localStorage
+        function loadSettings() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const settings = JSON.parse(saved);
+                    
+                    // Apply visualizer settings
+                    if (settings.barStyle) {
+                        currentBarStyle = settings.barStyle;
+                        barStyle.value = settings.barStyle;
+                    }
+                    if (settings.sensitivity) {
+                        currentSensitivity = settings.sensitivity;
+                        sensitivity.value = settings.sensitivity;
+                        sensitivityValue.textContent = settings.sensitivity;
+                    }
+                    if (settings.colorTheme) {
+                        currentColorTheme = settings.colorTheme;
+                        colorTheme.value = settings.colorTheme;
+                    }
+                    if (settings.animationSpeed) {
+                        currentAnimationSpeed = settings.animationSpeed;
+                        animationSpeed.value = settings.animationSpeed;
+                        animationSpeedValue.textContent = settings.animationSpeed;
+                    }
+                    
+                    // Apply advanced visualizer settings
+                    if (settings.position) {
+                        currentPosition = settings.position;
+                        document.getElementById('visualizerPosition').value = settings.position;
+                    }
+                    if (settings.barCount) {
+                        currentBarCount = settings.barCount;
+                        document.getElementById('barCount').value = settings.barCount;
+                        document.getElementById('barCountValue').textContent = settings.barCount;
+                    }
+                    if (settings.mirrorMode) {
+                        currentMirrorMode = settings.mirrorMode;
+                        document.getElementById('mirrorMode').value = settings.mirrorMode;
+                    }
+                    if (settings.glowIntensity !== undefined) {
+                        currentGlowIntensity = settings.glowIntensity;
+                        document.getElementById('glowIntensity').value = settings.glowIntensity;
+                        document.getElementById('glowIntensityValue').textContent = settings.glowIntensity;
+                    }
+                    
+                    // Apply export settings
+                    if (settings.videoQuality) videoQuality.value = settings.videoQuality;
+                    if (settings.frameRate) frameRate.value = settings.frameRate;
+                    if (settings.exportFormat) exportFormat.value = settings.exportFormat;
+                    
+                    // Apply overlay settings (positions, sizes, opacity)
+                    if (settings.overlaySettings) {
+                        overlaySettings = settings.overlaySettings;
+                        // Update UI for overlay controls
+                        for (let i = 0; i < 5; i++) {
+                            document.getElementById(`overlay${i+1}Size`).value = overlaySettings[i].size;
+                            document.getElementById(`overlay${i+1}SizeValue`).textContent = overlaySettings[i].size;
+                            document.getElementById(`overlay${i+1}Opacity`).value = overlaySettings[i].opacity;
+                            document.getElementById(`overlay${i+1}OpacityValue`).textContent = overlaySettings[i].opacity;
+                        }
+                    }
+                    
+                    // Apply text overlay settings
+                    if (settings.textOverlays) {
+                        textOverlays = settings.textOverlays;
+                        // Update UI for text overlay controls
+                        for (let i = 0; i < 2; i++) {
+                            const t = textOverlays[i];
+                            document.getElementById(`text${i+1}Content`).value = t.content || '';
+                            document.getElementById(`text${i+1}Size`).value = t.size || 32;
+                            document.getElementById(`text${i+1}Color`).value = t.color || '#ffffff';
+                            document.getElementById(`text${i+1}Font`).value = t.font || 'Inter';
+                            document.getElementById(`text${i+1}Style`).value = t.style || 'normal';
+                            document.getElementById(`text${i+1}Shadow`).checked = t.shadow !== false;
+                        }
+                    }
+                    
+                    // Update canvas size based on loaded quality
+                    updateCanvasSize();
+                    
+                    console.log('Settings loaded from localStorage');
+                }
+            } catch (e) {
+                console.warn('Could not load settings from localStorage:', e);
+            }
+        }
+        
+        // Set mobile-friendly defaults if no saved settings
+        function applyMobileDefaults() {
+            if (isMobile && !localStorage.getItem(STORAGE_KEY)) {
+                // Default to 720p on mobile for better performance
+                videoQuality.value = '720p';
+                frameRate.value = '24';
+                // Lower bar count for performance
+                currentBarCount = 48;
+                document.getElementById('barCount').value = 48;
+                document.getElementById('barCountValue').textContent = '48';
+            }
+        }
+
+        // Initial setup
+        loadSettings(); // Load saved settings first
+        applyMobileDefaults(); // Apply mobile defaults if needed
+        drawInitialState();
+
+        // --- Event Listeners ---
+        imageUpload.addEventListener('change', handleImageUpload);
+        audioUpload.addEventListener('change', handleAudioUpload);
+        startBtn.addEventListener('click', handleStart);
+        pauseBtn.addEventListener('click', handlePause);
+        resumeBtn.addEventListener('click', handleResume);
+        stopBtn.addEventListener('click', handleStop);
+        audioPlayer.addEventListener('ended', handleStop);
+        sensitivity.addEventListener('input', (e) => {
+            currentSensitivity = parseFloat(e.target.value);
+            sensitivityValue.textContent = currentSensitivity;
+            saveSettings();
+        });
+        barStyle.addEventListener('change', (e) => {
+            currentBarStyle = e.target.value;
+            saveSettings();
+        });
+        colorTheme.addEventListener('change', (e) => {
+            currentColorTheme = e.target.value;
+            saveSettings();
+        });
+        animationSpeed.addEventListener('input', (e) => {
+            currentAnimationSpeed = parseFloat(e.target.value);
+            animationSpeedValue.textContent = e.target.value;
+            saveSettings();
+        });
+        
+        // Advanced visualizer controls
+        document.getElementById('visualizerPosition').addEventListener('change', (e) => {
+            currentPosition = e.target.value;
+            saveSettings();
+            drawInitialState();
+        });
+        document.getElementById('barCount').addEventListener('input', (e) => {
+            currentBarCount = parseInt(e.target.value);
+            document.getElementById('barCountValue').textContent = e.target.value;
+            saveSettings();
+            drawInitialState();
+        });
+        document.getElementById('mirrorMode').addEventListener('change', (e) => {
+            currentMirrorMode = e.target.value;
+            saveSettings();
+            drawInitialState();
+        });
+        document.getElementById('glowIntensity').addEventListener('input', (e) => {
+            currentGlowIntensity = parseInt(e.target.value);
+            document.getElementById('glowIntensityValue').textContent = e.target.value;
+            saveSettings();
+            drawInitialState();
+        });
+        
+        previewBtn.addEventListener('click', togglePreviewMode);
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        
+        // Export settings auto-save
+        videoQuality.addEventListener('change', () => { updateCanvasSize(); saveSettings(); });
+        frameRate.addEventListener('change', () => {
+            targetFrameInterval = 1000 / parseInt(frameRate.value);
+            saveSettings();
+        });
+        exportFormat.addEventListener('change', saveSettings);
+        
+        // Shortcuts toggle
+        document.getElementById('shortcutsToggle').addEventListener('click', () => {
+            const help = document.getElementById('shortcutsHelp');
+            help.classList.toggle('hidden');
+        });
+        
+        // Hide keyboard shortcuts on mobile (touch devices)
+        if (hasTouch && isMobile) {
+            document.getElementById('shortcutsToggle').style.display = 'none';
+        }
+        
+        // Visibility change handler - pause when user switches tabs/apps
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // Page is hidden - pause if in preview mode
+                if (isPreviewMode && !audioPlayer.paused) {
+                    audioPlayer.pause();
+                }
+            }
+        });
+        
+        // Handle page unload - warn if recording
+        window.addEventListener('beforeunload', (e) => {
+            if (appState === 'recording') {
+                e.preventDefault();
+                e.returnValue = 'Recording in progress. Are you sure you want to leave?';
+                return e.returnValue;
+            }
+        });
+        
+        // Quality change handler
+        // (moved to combined listener above)
+        
+        // Canvas mouse events for overlay dragging
+        canvas.addEventListener('mousedown', handleCanvasMouseDown);
+        canvas.addEventListener('mousemove', handleCanvasMouseMove);
+        canvas.addEventListener('mouseup', handleCanvasMouseUp);
+        canvas.addEventListener('mouseleave', handleCanvasMouseUp);
+        
+        // Touch events for mobile
+        canvas.addEventListener('touchstart', handleCanvasTouchStart, { passive: false });
+        canvas.addEventListener('touchmove', handleCanvasTouchMove, { passive: false });
+        canvas.addEventListener('touchend', handleCanvasTouchEnd, { passive: false });
+        
+        // Prevent context menu on long press
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+        
+        // Overlay event listeners
+        for (let i = 1; i <= 5; i++) {
+            document.getElementById(`overlay${i}Upload`).addEventListener('change', (e) => handleOverlayUpload(e, i-1));
+            document.getElementById(`overlay${i}Size`).addEventListener('input', (e) => handleOverlaySize(e, i-1));
+            document.getElementById(`overlay${i}Opacity`).addEventListener('input', (e) => handleOverlayOpacity(e, i-1));
+            document.getElementById(`overlay${i}Remove`).addEventListener('click', () => removeOverlay(i-1));
+        }
+        
+        // Text overlay event listeners
+        for (let i = 1; i <= 2; i++) {
+            const idx = i - 1;
+            document.getElementById(`text${i}Content`).addEventListener('input', (e) => {
+                textOverlays[idx].content = e.target.value;
+                saveSettings();
+                drawInitialState();
+            });
+            document.getElementById(`text${i}Size`).addEventListener('input', (e) => {
+                textOverlays[idx].size = parseInt(e.target.value);
+                saveSettings();
+                drawInitialState();
+            });
+            document.getElementById(`text${i}Color`).addEventListener('input', (e) => {
+                textOverlays[idx].color = e.target.value;
+                saveSettings();
+                drawInitialState();
+            });
+            document.getElementById(`text${i}Font`).addEventListener('change', (e) => {
+                textOverlays[idx].font = e.target.value;
+                saveSettings();
+                drawInitialState();
+            });
+            document.getElementById(`text${i}Style`).addEventListener('change', (e) => {
+                textOverlays[idx].style = e.target.value;
+                saveSettings();
+                drawInitialState();
+            });
+            document.getElementById(`text${i}Shadow`).addEventListener('change', (e) => {
+                textOverlays[idx].shadow = e.target.checked;
+                saveSettings();
+                drawInitialState();
+            });
+        }
+
+        // --- Handlers ---
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                imageFileName.textContent = file.name;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    backgroundImage = new Image();
+                    backgroundImage.onload = () => {
+                        drawInitialState();
+                        checkFilesReady();
+                    };
+                    backgroundImage.src = event.target.result;
+                    backgroundNeedsUpdate = true; // Invalidate background cache
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function handleOverlayUpload(e, index) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById(`overlay${index+1}Name`).textContent = file.name;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    overlayImages[index] = new Image();
+                    overlayImages[index].onload = () => {
+                        drawInitialState();
+                    };
+                    overlayImages[index].src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function handleOverlaySize(e, index) {
+            overlaySettings[index].size = parseInt(e.target.value);
+            document.getElementById(`overlay${index+1}SizeValue`).textContent = e.target.value;
+            saveSettings();
+            drawInitialState();
+        }
+        
+        function handleOverlayOpacity(e, index) {
+            overlaySettings[index].opacity = parseInt(e.target.value);
+            document.getElementById(`overlay${index+1}OpacityValue`).textContent = e.target.value;
+            saveSettings();
+            drawInitialState();
+        }
+        
+        function removeOverlay(index) {
+            overlayImages[index] = null;
+            document.getElementById(`overlay${index+1}Upload`).value = '';
+            document.getElementById(`overlay${index+1}Name`).textContent = '';
+            drawInitialState();
+        }
+        
+        function handleCanvasMouseDown(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const mouseX = (e.clientX - rect.left) * scaleX;
+            const mouseY = (e.clientY - rect.top) * scaleY;
+            
+            // Check text overlays first (they're on top)
+            for (let i = textOverlays.length - 1; i >= 0; i--) {
+                if (textOverlays[i].content && isPointInTextOverlay(mouseX, mouseY, i)) {
+                    activeTextOverlay = i;
+                    textOverlays[i].isDragging = true;
+                    textOverlays[i].dragOffset = {
+                        x: mouseX - textOverlays[i].x,
+                        y: mouseY - textOverlays[i].y
+                    };
+                    canvas.style.cursor = 'grabbing';
+                    return;
+                }
+            }
+            
+            // Check if clicking on any image overlay (check in reverse order for top-to-bottom)
+            for (let i = overlayImages.length - 1; i >= 0; i--) {
+                if (overlayImages[i] && isPointInOverlay(mouseX, mouseY, i)) {
+                    activeOverlay = i;
+                    overlaySettings[i].isDragging = true;
+                    overlaySettings[i].dragOffset = {
+                        x: mouseX - overlaySettings[i].x,
+                        y: mouseY - overlaySettings[i].y
+                    };
+                    canvas.style.cursor = 'grabbing';
+                    break;
+                }
+            }
+        }
+        
+        function handleCanvasMouseMove(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const mouseX = (e.clientX - rect.left) * scaleX;
+            const mouseY = (e.clientY - rect.top) * scaleY;
+            
+            // Handle text overlay dragging
+            if (activeTextOverlay !== null && textOverlays[activeTextOverlay].isDragging) {
+                textOverlays[activeTextOverlay].x = mouseX - textOverlays[activeTextOverlay].dragOffset.x;
+                textOverlays[activeTextOverlay].y = mouseY - textOverlays[activeTextOverlay].dragOffset.y;
+                drawInitialState();
+                return;
+            }
+            
+            // Handle image overlay dragging
+            if (activeOverlay !== null && overlaySettings[activeOverlay].isDragging) {
+                overlaySettings[activeOverlay].x = mouseX - overlaySettings[activeOverlay].dragOffset.x;
+                overlaySettings[activeOverlay].y = mouseY - overlaySettings[activeOverlay].dragOffset.y;
+                drawInitialState();
+            } else {
+                // Check if hovering over any text overlay
+                let hovering = false;
+                for (let i = textOverlays.length - 1; i >= 0; i--) {
+                    if (textOverlays[i].content && isPointInTextOverlay(mouseX, mouseY, i)) {
+                        hovering = true;
+                        break;
+                    }
+                }
+                // Check if hovering over any image overlay
+                if (!hovering) {
+                    for (let i = overlayImages.length - 1; i >= 0; i--) {
+                        if (overlayImages[i] && isPointInOverlay(mouseX, mouseY, i)) {
+                            hovering = true;
+                            break;
+                        }
+                    }
+                }
+                canvas.style.cursor = hovering ? 'grab' : 'default';
+            }
+        }
+        
+        function handleCanvasMouseUp() {
+            if (activeTextOverlay !== null) {
+                textOverlays[activeTextOverlay].isDragging = false;
+                saveSettings();
+                activeTextOverlay = null;
+            }
+            if (activeOverlay !== null) {
+                overlaySettings[activeOverlay].isDragging = false;
+                saveSettings(); // Save new position
+                activeOverlay = null;
+            }
+            canvas.style.cursor = 'default';
+        }
+        
+        function isPointInOverlay(x, y, overlayIndex) {
+            const overlay = overlaySettings[overlayIndex];
+            const img = overlayImages[overlayIndex];
+            if (!img) return false;
+            
+            const scaledWidth = (img.width * overlay.size) / 100;
+            const scaledHeight = (img.height * overlay.size) / 100;
+            
+            return x >= overlay.x && x <= overlay.x + scaledWidth &&
+                   y >= overlay.y && y <= overlay.y + scaledHeight;
+        }
+        
+        function isPointInTextOverlay(x, y, textIndex) {
+            const text = textOverlays[textIndex];
+            if (!text.content) return false;
+            
+            // Calculate text dimensions using actual font metrics
+            ctx.font = `${text.style} ${text.size}px ${text.font}`;
+            const metrics = ctx.measureText(text.content);
+            const textWidth = metrics.width;
+            // Use actual metric ascent/descent for accurate hit-testing
+            const ascent = metrics.actualBoundingBoxAscent || text.size * 0.8;
+            const descent = metrics.actualBoundingBoxDescent || text.size * 0.2;
+            
+            // Text is drawn at alphabetic baseline, so box extends
+            // from (y - ascent) to (y + descent)
+            return x >= text.x && x <= text.x + textWidth &&
+                   y >= text.y - ascent && y <= text.y + descent;
+        }
+        
+        // Touch event handlers for mobile support
+        function handleCanvasTouchStart(e) {
+            e.preventDefault();
+            if (e.touches.length === 1) {
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const touchX = (touch.clientX - rect.left) * scaleX;
+                const touchY = (touch.clientY - rect.top) * scaleY;
+                
+                // Check text overlays first
+                for (let i = textOverlays.length - 1; i >= 0; i--) {
+                    if (textOverlays[i].content && isPointInTextOverlay(touchX, touchY, i)) {
+                        activeTextOverlay = i;
+                        textOverlays[i].isDragging = true;
+                        textOverlays[i].dragOffset = {
+                            x: touchX - textOverlays[i].x,
+                            y: touchY - textOverlays[i].y
+                        };
+                        return;
+                    }
+                }
+                
+                // Check if touching any image overlay
+                for (let i = overlayImages.length - 1; i >= 0; i--) {
+                    if (overlayImages[i] && isPointInOverlay(touchX, touchY, i)) {
+                        activeOverlay = i;
+                        overlaySettings[i].isDragging = true;
+                        overlaySettings[i].dragOffset = {
+                            x: touchX - overlaySettings[i].x,
+                            y: touchY - overlaySettings[i].y
+                        };
+                        break;
+                    }
+                }
+            }
+        }
+        
+        function handleCanvasTouchMove(e) {
+            e.preventDefault();
+            if (e.touches.length === 1) {
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const touchX = (touch.clientX - rect.left) * scaleX;
+                const touchY = (touch.clientY - rect.top) * scaleY;
+                
+                if (activeTextOverlay !== null && textOverlays[activeTextOverlay].isDragging) {
+                    textOverlays[activeTextOverlay].x = touchX - textOverlays[activeTextOverlay].dragOffset.x;
+                    textOverlays[activeTextOverlay].y = touchY - textOverlays[activeTextOverlay].dragOffset.y;
+                    drawInitialState();
+                } else if (activeOverlay !== null && overlaySettings[activeOverlay].isDragging) {
+                    overlaySettings[activeOverlay].x = touchX - overlaySettings[activeOverlay].dragOffset.x;
+                    overlaySettings[activeOverlay].y = touchY - overlaySettings[activeOverlay].dragOffset.y;
+                    drawInitialState();
+                }
+            }
+        }
+        
+        function handleCanvasTouchEnd(e) {
+            e.preventDefault();
+            if (activeTextOverlay !== null) {
+                textOverlays[activeTextOverlay].isDragging = false;
+                saveSettings();
+                activeTextOverlay = null;
+            }
+            if (activeOverlay !== null) {
+                overlaySettings[activeOverlay].isDragging = false;
+                saveSettings(); // Save new position
+                activeOverlay = null;
+            }
+        }
+
+        function handleAudioUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                audioFileName.textContent = file.name;
+                // Revoke previous object URL to prevent memory leak
+                if (audioSrc) {
+                    URL.revokeObjectURL(audioSrc);
+                }
+                audioSrc = URL.createObjectURL(file);
+                audioPlayer.src = audioSrc;
+                checkFilesReady();
+            }
+        }
+
+        async function handleStart() {
+            if (appState !== 'idle') return;
+            
+            try {
+                appState = 'recording';
+                clipCounter++;
+                statusMessage.textContent = `Recording Clip ${clipCounter}...`;
+                
+                startTime = Date.now();
+                progressContainer.classList.remove('hidden');
+                updateProgress();
+                
+                await setupAudioApi();
+                
+                // Resume audio context if suspended (browser policy - especially iOS)
+                if (audioContext.state === 'suspended') {
+                    await audioContext.resume();
+                }
+                
+                // iOS Safari requires user interaction to play audio
+                const playPromise = audioPlayer.play();
+                if (playPromise !== undefined) {
+                    await playPromise;
+                }
+                
+                mediaRecorder.start();
+                draw();
+
+                updateButtons();
+            } catch (error) {
+                console.error('Error starting recording:', error);
+                appState = 'idle';
+                statusMessage.textContent = `Error: ${error.message}. Try again.`;
+                progressContainer.classList.add('hidden');
+                updateButtons();
+            }
+        }
+
+        function handlePause() {
+            if (appState !== 'recording') return;
+            appState = 'paused';
+            statusMessage.textContent = `Paused. Finishing Clip ${clipCounter}...`;
+            
+            audioPlayer.pause();
+            mediaRecorder.stop(); // This will trigger 'onstop' to finalize the clip
+            cancelAnimationFrame(animationFrameId);
+
+            updateButtons();
+        }
+
+        function handleResume() {
+            if (appState !== 'paused') return;
+            appState = 'recording';
+            clipCounter++;
+            statusMessage.textContent = `Recording Clip ${clipCounter}...`;
+
+            mediaRecorder.start();
+            audioPlayer.play();
+            draw();
+
+            updateButtons();
+        }
+
+        function handleStop() {
+            if (appState === 'idle') return;
+
+            if (appState === 'recording') {
+                mediaRecorder.stop(); // Finalize the current clip
+            }
+            
+            appState = 'idle';
+            statusMessage.textContent = 'Processing finished. All clips are ready for download.';
+            
+            audioPlayer.pause();
+            progressContainer.classList.add('hidden');
+            cancelAnimationFrame(animationFrameId);
+            drawInitialState(); // Reset canvas view
+
+            updateButtons();
+        }
+        
+        async function togglePreviewMode() {
+            isPreviewMode = !isPreviewMode;
+            if (isPreviewMode) {
+                previewBtn.textContent = '🎬 Record Mode';
+                previewBtn.className = 'btn bg-green-600 hover:bg-green-700 touch-target';
+                
+                // Setup audio analysis for preview if not already done
+                if (!audioContext && audioSrc) {
+                    await setupPreviewAudioApi();
+                }
+                
+                // Resume audio context if suspended
+                if (audioContext && audioContext.state === 'suspended') {
+                    await audioContext.resume();
+                }
+                
+                statusMessage.textContent = 'Preview mode active. Play audio to see visualization.';
+            } else {
+                previewBtn.textContent = '👁️ Preview Mode';
+                previewBtn.className = 'btn bg-purple-600 hover:bg-purple-700 touch-target';
+                cancelAnimationFrame(animationFrameId);
+                drawInitialState();
+                statusMessage.textContent = backgroundImage && audioSrc ? 'Ready to start recording.' : '';
+            }
+        }
+        
+        function toggleFullscreen() {
+            const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+            
+            if (!fullscreenElement) {
+                const element = canvas.parentElement;
+                
+                // Try various fullscreen methods for cross-browser support
+                const requestFullscreen = element.requestFullscreen || 
+                                         element.webkitRequestFullscreen || 
+                                         element.mozRequestFullScreen || 
+                                         element.msRequestFullscreen;
+                
+                if (requestFullscreen) {
+                    requestFullscreen.call(element).catch(err => {
+                        // Fullscreen failed, show message
+                        statusMessage.textContent = 'Fullscreen not available on this device';
+                        setTimeout(() => {
+                            if (statusMessage.textContent === 'Fullscreen not available on this device') {
+                                statusMessage.textContent = '';
+                            }
+                        }, 3000);
+                    });
+                } else {
+                    // For iOS which doesn't support fullscreen API
+                    // Scroll to canvas and make it prominent
+                    canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    statusMessage.textContent = 'Tip: Rotate device to landscape for best view';
+                    setTimeout(() => {
+                        if (statusMessage.textContent.includes('Rotate')) {
+                            statusMessage.textContent = '';
+                        }
+                    }, 3000);
+                }
+            } else {
+                const exitFullscreen = document.exitFullscreen || 
+                                      document.webkitExitFullscreen || 
+                                      document.mozCancelFullScreen || 
+                                      document.msExitFullscreen;
+                if (exitFullscreen) {
+                    exitFullscreen.call(document);
+                }
+            }
+        }
+        
+        // Listen for fullscreen changes
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+        
+        function handleFullscreenChange() {
+            const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+            fullscreenBtn.textContent = isFullscreen ? '✕ Exit Fullscreen' : '🔍 Fullscreen';
+        }
+        
+        function updateCanvasSize() {
+            const quality = videoQuality.value;
+            const sizes = {
+                '720p': { width: 1280, height: 720 },
+                '1080p': { width: 1920, height: 1080 },
+                '4k': { width: 3840, height: 2160 }
+            };
+            
+            canvas.width = sizes[quality].width;
+            canvas.height = sizes[quality].height;
+            
+            // Ensure canvas is responsive
+            canvas.style.width = '100%';
+            canvas.style.height = 'auto';
+            
+            // Invalidate background cache when size changes
+            backgroundNeedsUpdate = true;
+            
+            // Update target frame interval based on frame rate setting
+            targetFrameInterval = 1000 / parseInt(frameRate.value);
+            
+            // On mobile, cap at lower resolution for performance
+            if (isMobile && quality === '4k') {
+                statusMessage.textContent = '⚠️ 4K may be slow on mobile. Consider 1080p.';
+                setTimeout(() => {
+                    if (statusMessage.textContent.includes('4K')) {
+                        statusMessage.textContent = '';
+                    }
+                }, 4000);
+            }
+            
+            drawInitialState();
+        }
+        
+        // Device orientation change handler
+        function handleOrientationChange() {
+            // Debounce resize events
+            clearTimeout(window.resizeTimeout);
+            window.resizeTimeout = setTimeout(() => {
+                backgroundNeedsUpdate = true;
+                drawInitialState();
+            }, 150);
+        }
+        
+        // Add orientation change listener
+        window.addEventListener('orientationchange', handleOrientationChange);
+        window.addEventListener('resize', handleOrientationChange);
+        
+        // Check browser recording support on load
+        function checkRecordingSupport() {
+            if (!window.MediaRecorder) {
+                statusMessage.textContent = '⚠️ Recording not supported in this browser. Try Chrome or Firefox.';
+                startBtn.disabled = true;
+                return false;
+            }
+            
+            // Check for iOS Safari limitations
+            if (isIOS && isSafari) {
+                const iosVersion = parseInt((navigator.userAgent.match(/OS (\d+)_/) || [])[1] || 0);
+                if (iosVersion < 14) {
+                    statusMessage.textContent = '⚠️ Recording requires iOS 14+. Preview mode available.';
+                }
+            }
+            
+            return true;
+        }
+        
+        // Run support check
+        checkRecordingSupport();
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Don't trigger shortcuts when typing in inputs
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') {
+                return;
+            }
+            
+            switch(e.key.toLowerCase()) {
+                case ' ': // Space - play/pause audio
+                    e.preventDefault();
+                    if (audioPlayer.paused) {
+                        audioPlayer.play();
+                    } else {
+                        audioPlayer.pause();
+                    }
+                    break;
+                case 'r': // R - start recording
+                    if (appState === 'idle' && !startBtn.disabled) {
+                        handleStart();
+                    } else if (appState === 'paused') {
+                        handleResume();
+                    }
+                    break;
+                case 'p': // P - pause recording
+                    if (appState === 'recording') {
+                        handlePause();
+                    }
+                    break;
+                case 's': // S - stop recording
+                    if (appState !== 'idle') {
+                        handleStop();
+                    }
+                    break;
+                case 'f': // F - toggle fullscreen
+                    toggleFullscreen();
+                    break;
+                case 'v': // V - toggle preview mode
+                    togglePreviewMode();
+                    break;
+                case 'escape': // Escape - exit fullscreen or stop
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                    } else if (appState !== 'idle') {
+                        handleStop();
+                    }
+                    break;
+            }
+        });
+        
+        function updateProgress() {
+            if (appState === 'recording' && startTime) {
+                const elapsed = (Date.now() - startTime) / 1000;
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = Math.floor(elapsed % 60);
+                recordingTime.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (audioPlayer.duration) {
+                    const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                    progressBar.style.width = `${progress}%`;
+                    progressText.textContent = `${Math.round(progress)}% complete`;
+                }
+                
+                requestAnimationFrame(updateProgress);
+            }
+        }
+
+        // --- Core Functions ---
+        
+        // Get supported MIME type for recording
+        function getSupportedMimeType() {
+            const preferredFormat = exportFormat.value;
+            
+            const mimeTypes = preferredFormat === 'mp4' ? [
+                'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+                'video/mp4;codecs=avc1',
+                'video/mp4',
+                'video/webm;codecs=vp9,opus',
+                'video/webm;codecs=vp8,opus',
+                'video/webm'
+            ] : [
+                'video/webm;codecs=vp9,opus',
+                'video/webm;codecs=vp8,opus', 
+                'video/webm;codecs=vp9',
+                'video/webm;codecs=vp8',
+                'video/webm',
+                'video/mp4'
+            ];
+            
+            for (const mimeType of mimeTypes) {
+                if (MediaRecorder.isTypeSupported(mimeType)) {
+                    return mimeType;
+                }
+            }
+            
+            return ''; // Let browser choose default
+        }
+        
+        // Get file extension from MIME type
+        function getFileExtension(mimeType) {
+            if (mimeType.includes('mp4')) return 'mp4';
+            if (mimeType.includes('webm')) return 'webm';
+            return 'webm'; // Default fallback
+        }
+        
+        // Setup audio context and analyser (shared between preview and recording)
+        async function setupAudioContext() {
+            if (audioContext) return;
+            
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 512;
+            analyser.smoothingTimeConstant = 0.8;
+            bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+            
+            source = audioContext.createMediaElementSource(audioPlayer);
+            source.connect(analyser);
+            source.connect(audioContext.destination);
+        }
+        
+        // Setup audio API for preview mode only (no recording)
+        async function setupPreviewAudioApi() {
+            await setupAudioContext();
+        }
+        
+        // Audio player events for preview mode
+        audioPlayer.addEventListener('play', () => {
+            if (isPreviewMode && audioContext) {
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                draw();
+            }
+        });
+        
+        audioPlayer.addEventListener('pause', () => {
+            if (isPreviewMode && appState === 'idle') {
+                cancelAnimationFrame(animationFrameId);
+                drawInitialState();
+            }
+        });
+
+        function checkFilesReady() {
+            if (backgroundImage && audioSrc) {
+                startBtn.disabled = false;
+                statusMessage.textContent = 'Ready to start recording.';
+            }
+        }
+        
+        function updateButtons() {
+            startBtn.classList.toggle('hidden', appState !== 'idle');
+            pauseBtn.classList.toggle('hidden', appState !== 'recording');
+            resumeBtn.classList.toggle('hidden', appState !== 'paused');
+            stopBtn.classList.toggle('hidden', appState === 'idle');
+        }
+
+        function drawInitialState() {
+            ctx.fillStyle = '#1f2937';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (backgroundImage) {
+                const canvasAspect = canvas.width / canvas.height;
+                const imgAspect = backgroundImage.width / backgroundImage.height;
+                let sx = 0, sy = 0, sWidth = backgroundImage.width, sHeight = backgroundImage.height;
+
+                if (imgAspect > canvasAspect) {
+                    sWidth = backgroundImage.height * canvasAspect;
+                    sx = (backgroundImage.width - sWidth) / 2;
+                } else {
+                    sHeight = backgroundImage.width / canvasAspect;
+                    sy = (backgroundImage.height - sHeight) / 2;
+                }
+                ctx.drawImage(backgroundImage, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+            } else {
+                ctx.fillStyle = 'white';
+                ctx.font = '30px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Upload an image to see a preview', canvas.width / 2, canvas.height / 2);
+                ctx.textAlign = 'start';
+            }
+            
+            // Draw overlay images
+            drawOverlayImages();
+        }
+        
+        function drawOverlayImages() {
+            for (let i = 0; i < overlayImages.length; i++) {
+                if (overlayImages[i]) {
+                    const overlay = overlaySettings[i];
+                    const img = overlayImages[i];
+                    
+                    // Calculate scaled dimensions
+                    const scaledWidth = (img.width * overlay.size) / 100;
+                    const scaledHeight = (img.height * overlay.size) / 100;
+                    
+                    // Apply opacity
+                    ctx.globalAlpha = overlay.opacity / 100;
+                    
+                    // Draw the overlay image
+                    ctx.drawImage(img, overlay.x, overlay.y, scaledWidth, scaledHeight);
+                    
+                    // Reset alpha
+                    ctx.globalAlpha = 1.0;
+                }
+            }
+            
+            // Draw text overlays
+            drawTextOverlays();
+        }
+        
+        function drawTextOverlays() {
+            for (let i = 0; i < textOverlays.length; i++) {
+                const text = textOverlays[i];
+                if (text.content) {
+                    // Set font style
+                    ctx.font = `${text.style} ${text.size}px ${text.font}`;
+                    ctx.fillStyle = text.color;
+                    ctx.textBaseline = 'alphabetic';
+                    
+                    // Add shadow if enabled
+                    if (text.shadow) {
+                        ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+                        ctx.shadowBlur = 4;
+                        ctx.shadowOffsetX = 2;
+                        ctx.shadowOffsetY = 2;
+                    }
+                    
+                    // Draw the text
+                    ctx.fillText(text.content, text.x, text.y);
+                    
+                    // Reset shadow
+                    ctx.shadowColor = 'transparent';
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 0;
+                }
+            }
+        }
+
+        // Destination node for recording (persists across recordings)
+        let recordingDestination = null;
+        
+        async function setupAudioApi() {
+            // Setup shared audio context if not already done
+            await setupAudioContext();
+            
+            // Create recording destination if needed
+            if (!recordingDestination) {
+                recordingDestination = audioContext.createMediaStreamDestination();
+                analyser.connect(recordingDestination);
+            }
+
+            // Always recreate MediaRecorder to pick up latest settings
+            const canvasStream = canvas.captureStream(parseInt(frameRate.value));
+            const combinedStream = new MediaStream([...canvasStream.getVideoTracks(), ...recordingDestination.stream.getAudioTracks()]);
+            
+            // Determine best supported codec with fallbacks
+            const mimeType = getSupportedMimeType();
+            
+            try {
+                mediaRecorder = new MediaRecorder(combinedStream, { mimeType });
+                console.log(`Recording with codec: ${mimeType}`);
+            } catch (e) {
+                console.warn(`Failed to use ${mimeType}, falling back to default`);
+                mediaRecorder = new MediaRecorder(combinedStream);
+            }
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) recordedChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                // Detect actual format from recorder's mimeType
+                const actualMimeType = mediaRecorder.mimeType || 'video/webm';
+                const format = getFileExtension(actualMimeType);
+                const blob = new Blob(recordedChunks, { type: actualMimeType });
+                const videoUrl = URL.createObjectURL(blob);
+                recordedChunks = []; // Clear for the next clip
+
+                const quality = videoQuality.value;
+                const downloadLink = document.createElement('a');
+                downloadLink.href = videoUrl;
+                downloadLink.download = `visualizer-clip-${clipCounter}-${quality}.${format}`;
+                downloadLink.textContent = `📥 Download Clip ${clipCounter} (${quality.toUpperCase()}, ${format.toUpperCase()})`;
+                downloadLink.className = 'btn bg-blue-600 hover:bg-blue-700';
+                downloadContainer.appendChild(downloadLink);
+
+                if (appState === 'paused') {
+                    statusMessage.textContent = `Clip ${clipCounter} is ready. Resume to record the next clip.`;
+                }
+            };
+        }
+
+        function getColorScheme() {
+            const schemes = {
+                default: ['rgba(59, 130, 246, 0.8)', 'rgba(139, 92, 246, 0.7)', 'rgba(236, 72, 153, 0.6)'],
+                fire: ['rgba(255, 69, 0, 0.8)', 'rgba(255, 140, 0, 0.7)', 'rgba(255, 215, 0, 0.6)'],
+                ocean: ['rgba(0, 119, 182, 0.8)', 'rgba(0, 180, 216, 0.7)', 'rgba(72, 202, 228, 0.6)'],
+                forest: ['rgba(34, 139, 34, 0.8)', 'rgba(50, 205, 50, 0.7)', 'rgba(144, 238, 144, 0.6)'],
+                sunset: ['rgba(255, 94, 77, 0.8)', 'rgba(251, 133, 0, 0.7)', 'rgba(255, 193, 7, 0.6)'],
+                neon: ['rgba(57, 255, 20, 0.8)', 'rgba(255, 20, 147, 0.7)', 'rgba(0, 191, 255, 0.6)'],
+                rainbow: null // Special case for dynamic rainbow
+            };
+            
+            if (currentColorTheme === 'rainbow') {
+                return generateRainbowColors();
+            }
+            
+            return schemes[currentColorTheme] || schemes.default;
+        }
+        
+        function generateRainbowColors() {
+            const colors = [];
+            for (let i = 0; i < 3; i++) {
+                const hue = (animationFrame * currentAnimationSpeed + i * 120) % 360;
+                colors.push(`hsla(${hue}, 80%, 60%, 0.8)`);
+            }
+            return colors;
+        }
+
+        function draw(timestamp) {
+            animationFrameId = requestAnimationFrame(draw);
+            
+            // Frame rate throttling
+            if (timestamp - lastFrameTime < targetFrameInterval) {
+                return;
+            }
+            lastFrameTime = timestamp;
+            
+            analyser.getByteFrequencyData(dataArray);
+            
+            // Use cached background for performance
+            if (backgroundNeedsUpdate || !cachedBackground) {
+                updateCachedBackground();
+            }
+            
+            // Draw cached background
+            if (cachedBackground) {
+                ctx.drawImage(cachedBackground, 0, 0);
+            } else {
+                drawBackgroundOnly();
+            }
+
+            animationFrame += currentAnimationSpeed;
+            const colors = getColorScheme();
+
+            switch(currentBarStyle) {
+                case 'gradient':
+                    drawGradientBars(colors);
+                    break;
+                case 'solid':
+                    drawSolidBars(colors);
+                    break;
+                case 'circle':
+                    drawCircularBars(colors);
+                    break;
+                case 'wave':
+                    drawWaveForm(colors);
+                    break;
+                case 'spectrum':
+                    drawSpectrum(colors);
+                    break;
+            }
+            
+            // Draw overlays on top of the visualizer
+            drawOverlayImages();
+        }
+        
+        // Draw only the background (no overlays)
+        function drawBackgroundOnly() {
+            ctx.fillStyle = '#1f2937';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (backgroundImage) {
+                const canvasAspect = canvas.width / canvas.height;
+                const imgAspect = backgroundImage.width / backgroundImage.height;
+                let sx = 0, sy = 0, sWidth = backgroundImage.width, sHeight = backgroundImage.height;
+
+                if (imgAspect > canvasAspect) {
+                    sWidth = backgroundImage.height * canvasAspect;
+                    sx = (backgroundImage.width - sWidth) / 2;
+                } else {
+                    sHeight = backgroundImage.width / canvasAspect;
+                    sy = (backgroundImage.height - sHeight) / 2;
+                }
+                ctx.drawImage(backgroundImage, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+            }
+        }
+        
+        // Cache the background for performance
+        function updateCachedBackground() {
+            const offscreen = document.createElement('canvas');
+            offscreen.width = canvas.width;
+            offscreen.height = canvas.height;
+            const offCtx = offscreen.getContext('2d');
+            
+            offCtx.fillStyle = '#1f2937';
+            offCtx.fillRect(0, 0, offscreen.width, offscreen.height);
+
+            if (backgroundImage) {
+                const canvasAspect = offscreen.width / offscreen.height;
+                const imgAspect = backgroundImage.width / backgroundImage.height;
+                let sx = 0, sy = 0, sWidth = backgroundImage.width, sHeight = backgroundImage.height;
+
+                if (imgAspect > canvasAspect) {
+                    sWidth = backgroundImage.height * canvasAspect;
+                    sx = (backgroundImage.width - sWidth) / 2;
+                } else {
+                    sHeight = backgroundImage.width / canvasAspect;
+                    sy = (backgroundImage.height - sHeight) / 2;
+                }
+                offCtx.drawImage(backgroundImage, sx, sy, sWidth, sHeight, 0, 0, offscreen.width, offscreen.height);
+            }
+            
+            cachedBackground = offscreen;
+            backgroundNeedsUpdate = false;
+        }
+
+        function drawGradientBars(colors) {
+            // Use customizable bar count
+            const barsToUse = Math.min(currentBarCount, bufferLength);
+            const barWidth = (canvas.width / barsToUse) * 0.8;
+            const gap = (canvas.width / barsToUse) * 0.2;
+            
+            // Calculate Y position based on visualizer position setting
+            const getYPosition = (barHeight) => {
+                switch(currentPosition) {
+                    case 'top': return barHeight;
+                    case 'center': return (canvas.height / 2) + (barHeight / 2);
+                    default: return canvas.height;
+                }
+            };
+            
+            // Apply glow effect
+            if (currentGlowIntensity > 0) {
+                ctx.shadowBlur = currentGlowIntensity;
+                ctx.shadowColor = colors[0];
+            }
+            
+            // Draw bars (and mirrored if enabled)
+            const drawBarsSet = (startX, direction) => {
+                let x = startX;
+                for (let i = 0; i < barsToUse; i++) {
+                    const dataIndex = Math.floor((i / barsToUse) * bufferLength);
+                    const barHeight = dataArray[dataIndex] * currentSensitivity;
+                    const yPos = getYPosition(barHeight);
+                    
+                    const gradient = ctx.createLinearGradient(0, yPos, 0, yPos - barHeight);
+                    gradient.addColorStop(0, colors[0]);
+                    gradient.addColorStop(0.5, colors[1]);
+                    gradient.addColorStop(1, colors[2]);
+                    ctx.fillStyle = gradient;
+                    
+                    if (currentPosition === 'top') {
+                        ctx.fillRect(x, 0, barWidth, barHeight);
+                    } else if (currentPosition === 'center') {
+                        ctx.fillRect(x, (canvas.height - barHeight) / 2, barWidth, barHeight);
+                    } else {
+                        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                    }
+                    
+                    x += (barWidth + gap) * direction;
+                }
+            };
+            
+            if (currentMirrorMode === 'horizontal') {
+                // Draw from center outward
+                const centerX = canvas.width / 2;
+                ctx.save();
+                drawBarsSet(centerX, 1);
+                ctx.scale(-1, 1);
+                ctx.translate(-canvas.width, 0);
+                drawBarsSet(centerX, 1);
+                ctx.restore();
+            } else if (currentMirrorMode === 'vertical') {
+                // Draw normal and mirrored vertically
+                drawBarsSet(0, 1);
+                ctx.save();
+                ctx.scale(1, -1);
+                ctx.translate(0, -canvas.height);
+                drawBarsSet(0, 1);
+                ctx.restore();
+            } else {
+                drawBarsSet(0, 1);
+            }
+            
+            // Reset shadow
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+        }
+
+        function drawSolidBars(colors) {
+            const barsToUse = Math.min(currentBarCount, bufferLength);
+            const barWidth = (canvas.width / barsToUse) * 0.8;
+            const gap = (canvas.width / barsToUse) * 0.2;
+            
+            // Apply glow effect
+            if (currentGlowIntensity > 0) {
+                ctx.shadowBlur = currentGlowIntensity;
+                ctx.shadowColor = colors[0];
+            }
+            
+            const drawBarsSet = (startX, direction) => {
+                let x = startX;
+                for (let i = 0; i < barsToUse; i++) {
+                    const dataIndex = Math.floor((i / barsToUse) * bufferLength);
+                    const barHeight = dataArray[dataIndex] * currentSensitivity;
+                    const colorIndex = Math.floor((i / barsToUse) * colors.length);
+                    ctx.fillStyle = colors[colorIndex];
+                    
+                    if (currentPosition === 'top') {
+                        ctx.fillRect(x, 0, barWidth, barHeight);
+                    } else if (currentPosition === 'center') {
+                        ctx.fillRect(x, (canvas.height - barHeight) / 2, barWidth, barHeight);
+                    } else {
+                        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                    }
+                    
+                    x += (barWidth + gap) * direction;
+                }
+            };
+            
+            if (currentMirrorMode === 'horizontal') {
+                const centerX = canvas.width / 2;
+                ctx.save();
+                drawBarsSet(centerX, 1);
+                ctx.scale(-1, 1);
+                ctx.translate(-canvas.width, 0);
+                drawBarsSet(centerX, 1);
+                ctx.restore();
+            } else if (currentMirrorMode === 'vertical') {
+                drawBarsSet(0, 1);
+                ctx.save();
+                ctx.scale(1, -1);
+                ctx.translate(0, -canvas.height);
+                drawBarsSet(0, 1);
+                ctx.restore();
+            } else {
+                drawBarsSet(0, 1);
+            }
+            
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+        }
+
+        function drawCircularBars(colors) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 50;
+            
+            // Apply glow effect
+            if (currentGlowIntensity > 0) {
+                ctx.shadowBlur = currentGlowIntensity;
+                ctx.shadowColor = colors[0];
+            }
+            
+            const barsToUse = Math.min(currentBarCount, bufferLength);
+
+            for (let i = 0; i < barsToUse; i++) {
+                const dataIndex = Math.floor((i / barsToUse) * bufferLength);
+                const barHeight = dataArray[dataIndex] * currentSensitivity * 0.5;
+                const angle = (i / barsToUse) * Math.PI * 2;
+                const x1 = centerX + Math.cos(angle) * radius;
+                const y1 = centerY + Math.sin(angle) * radius;
+                const x2 = centerX + Math.cos(angle) * (radius + barHeight);
+                const y2 = centerY + Math.sin(angle) * (radius + barHeight);
+                
+                const colorIndex = Math.floor((i / barsToUse) * colors.length);
+                ctx.strokeStyle = colors[colorIndex];
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+            
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+        }
+
+        function drawWaveForm(colors) {
+            // Apply glow effect
+            if (currentGlowIntensity > 0) {
+                ctx.shadowBlur = currentGlowIntensity;
+                ctx.shadowColor = colors[1];
+            }
+            
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = colors[1];
+            ctx.beginPath();
+
+            const sliceWidth = canvas.width / bufferLength;
+            let x = 0;
+            
+            // Calculate Y offset based on position
+            let yOffset = 0;
+            if (currentPosition === 'top') {
+                yOffset = -canvas.height / 4;
+            } else if (currentPosition === 'bottom') {
+                yOffset = canvas.height / 4;
+            }
+
+            for (let i = 0; i < bufferLength; i++) {
+                const v = dataArray[i] / 255.0;
+                const y = (canvas.height / 2) + yOffset + (v * canvas.height / 3 * currentSensitivity) - (canvas.height / 6);
+
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+
+                x += sliceWidth;
+            }
+
+            ctx.stroke();
+            
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+        }
+        
+        function drawSpectrum(colors) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const maxRadius = Math.min(centerX, centerY) - 20;
+            
+            // Apply glow effect
+            if (currentGlowIntensity > 0) {
+                ctx.shadowBlur = currentGlowIntensity;
+                ctx.shadowColor = colors[0];
+            }
+            
+            const barsToUse = Math.min(currentBarCount, bufferLength);
+            
+            // Draw multiple concentric circles
+            for (let ring = 0; ring < 3; ring++) {
+                const ringRadius = maxRadius * (0.3 + ring * 0.25);
+                ctx.beginPath();
+                
+                for (let i = 0; i < barsToUse; i++) {
+                    const dataIndex = Math.floor((i / barsToUse) * bufferLength);
+                    const angle = (i / barsToUse) * Math.PI * 2;
+                    const amplitude = dataArray[dataIndex] * currentSensitivity * 0.3;
+                    const radius = ringRadius + amplitude * (ring + 1) * 0.5;
+                    
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+                    
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                
+                ctx.closePath();
+                ctx.strokeStyle = colors[ring % colors.length];
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+            
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+        }
+        
+
+    </script>
+</body>
+</html>
