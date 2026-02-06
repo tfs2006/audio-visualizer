@@ -1279,6 +1279,16 @@
             if (appState !== 'idle') return;
             
             try {
+                // Cancel any existing animation loop (e.g. from preview mode)
+                cancelAnimationFrame(animationFrameId);
+                
+                // Reset preview mode if active to prevent play listener spawning extra draw loops
+                if (isPreviewMode) {
+                    isPreviewMode = false;
+                    previewBtn.textContent = '\ud83d\udc41\ufe0f Preview Mode';
+                    previewBtn.className = 'btn bg-purple-600 hover:bg-purple-700 touch-target';
+                }
+                
                 appState = 'recording';
                 clipCounter++;
                 statusMessage.textContent = `Recording Clip ${clipCounter}...`;
@@ -1330,6 +1340,13 @@
             appState = 'recording';
             clipCounter++;
             statusMessage.textContent = `Recording Clip ${clipCounter}...`;
+
+            // Cancel any lingering animation frame before starting new draw loop
+            cancelAnimationFrame(animationFrameId);
+            
+            // Restart progress timer for the new clip
+            startTime = Date.now();
+            updateProgress();
 
             mediaRecorder.start();
             audioPlayer.play();
