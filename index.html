@@ -800,14 +800,70 @@
         <!-- ── Downloads ── -->
         <div id="downloadContainer" class="flex flex-col gap-2 mb-5"></div>
 
-        <!-- ── Footer / Donate ── -->
-        <div class="text-center py-6">
-            <p class="text-xs mb-3" style="color:#374151;">Find this tool useful?</p>
-            <a href="https://buy.stripe.com/7sY8wPfJKcYf9nE9G68bS0l" target="_blank" rel="noopener noreferrer"
-               class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-white transition-all duration-300 hover:scale-105"
-               style="background:linear-gradient(135deg,#ec4899,#8b5cf6);box-shadow:0 4px 18px rgba(139,92,246,0.3);">
-                ☕ Buy Us a Coffee
-            </a>
+        <!-- ── Support Banner ── -->
+        <div class="mb-3 mt-2 rounded-2xl overflow-hidden" style="background:linear-gradient(135deg,rgba(139,92,246,0.12) 0%,rgba(236,72,153,0.12) 100%);border:1px solid rgba(139,92,246,0.25);">
+            <div class="p-6 sm:p-8">
+                <!-- Top row: icon + headline -->
+                <div class="flex flex-col sm:flex-row items-center gap-5">
+                    <!-- Pulse icon -->
+                    <div class="relative flex-shrink-0">
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);box-shadow:0 0 30px rgba(139,92,246,0.45);">🎧</div>
+                        <div class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-green-400" style="box-shadow:0 0 8px rgba(74,222,128,0.8);animation:pulse-dot 1.8s ease-in-out infinite;"></div>
+                    </div>
+                    <!-- Text -->
+                    <div class="text-center sm:text-left flex-1">
+                        <h2 class="text-xl sm:text-2xl font-bold text-white mb-1">This tool is 100% free &amp; ad-free</h2>
+                        <p class="text-sm" style="color:#a78bfa;">Built and maintained by one person. Your support keeps it alive and growing.</p>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="my-5" style="border-top:1px solid rgba(255,255,255,0.07);"></div>
+
+                <!-- Value bullets -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 text-sm">
+                    <div class="flex items-start gap-2.5 p-3 rounded-xl" style="background:rgba(0,0,0,0.2);">
+                        <span class="text-lg mt-0.5">🚫</span>
+                        <div>
+                            <div class="font-semibold text-white text-xs">No Ads. Ever.</div>
+                            <div class="text-xs mt-0.5" style="color:#6b7280;">No pop-ups or tracking</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-2.5 p-3 rounded-xl" style="background:rgba(0,0,0,0.2);">
+                        <span class="text-lg mt-0.5">⚡</span>
+                        <div>
+                            <div class="font-semibold text-white text-xs">Always Improving</div>
+                            <div class="text-xs mt-0.5" style="color:#6b7280;">New features added regularly</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-2.5 p-3 rounded-xl" style="background:rgba(0,0,0,0.2);">
+                        <span class="text-lg mt-0.5">🔒</span>
+                        <div>
+                            <div class="font-semibold text-white text-xs">Private by Design</div>
+                            <div class="text-xs mt-0.5" style="color:#6b7280;">Your files never leave your device</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CTA -->
+                <div class="flex flex-col items-center gap-3">
+                    <a href="https://pay.4ourmedia.com/b/6oU5kD1SUgarczQ8C28bS0n" target="_blank" rel="noopener noreferrer"
+                       class="inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-base text-white transition-all duration-300"
+                       style="background:linear-gradient(135deg,#8b5cf6,#ec4899);box-shadow:0 6px 28px rgba(139,92,246,0.45);letter-spacing:0.01em;"
+                       onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 36px rgba(139,92,246,0.6)';"
+                       onmouseout="this.style.transform='';this.style.boxShadow='0 6px 28px rgba(139,92,246,0.45)';">
+                        <span style="font-size:1.25rem;">💜</span>
+                        Support This Project — Pay What You Want
+                        <span style="font-size:1rem;opacity:0.8;">→</span>
+                    </a>
+                    <p class="text-xs" style="color:#4b5563;">Secure payment via Stripe &nbsp;·&nbsp; Any amount helps &nbsp;·&nbsp; One-time, no subscription</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Footer ── -->
+        <div class="text-center pb-8 pt-2">
+            <p class="text-xs" style="color:#1f2937;">© 2026 4ourmedia &nbsp;·&nbsp; Made with 💜 for creators</p>
         </div>
 
     </div>
