@@ -488,6 +488,10 @@
                             <option value="circle">Circular</option>
                             <option value="wave">Wave Form</option>
                             <option value="spectrum">Spectrum</option>
+                            <option value="particles">Particles</option>
+                            <option value="dna">DNA Helix</option>
+                            <option value="tunnel">Tunnel</option>
+                            <option value="dots">Radial Dots</option>
                         </select>
                     </div>
                     <div class="control-row">
@@ -2181,6 +2185,18 @@
                 case 'spectrum':
                     drawSpectrum(colors);
                     break;
+                case 'particles':
+                    drawParticles(colors);
+                    break;
+                case 'dna':
+                    drawDNAHelix(colors);
+                    break;
+                case 'tunnel':
+                    drawTunnel(colors);
+                    break;
+                case 'dots':
+                    drawRadialDots(colors);
+                    break;
             }
             
             // Draw overlays on top of the visualizer
@@ -2481,6 +2497,166 @@
                 ctx.stroke();
             }
             
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+        }
+
+        function drawParticles(colors) {
+            const count = Math.min(currentBarCount, bufferLength);
+
+            if (currentGlowIntensity > 0) {
+                ctx.shadowBlur = currentGlowIntensity;
+                ctx.shadowColor = colors[0];
+            }
+
+            for (let i = 0; i < count; i++) {
+                const dataIndex = Math.floor((i / count) * bufferLength);
+                const amplitude = dataArray[dataIndex];
+                const normalized = (amplitude / 255) * currentSensitivity;
+
+                const seed = i * 137.508;
+                const baseX = (Math.sin(seed) * 0.5 + 0.5) * canvas.width;
+                const speed = 0.3 + (i % 5) * 0.15;
+                const yPhase = (animationFrame * speed * 0.5 + seed) % canvas.height;
+                const x = baseX + Math.sin(animationFrame * 0.02 + seed) * 30 * normalized;
+                const y = canvas.height - yPhase;
+
+                const size = Math.max(2, 3 + normalized * 12);
+                const colorIndex = i % colors.length;
+
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = colors[colorIndex];
+                ctx.fill();
+            }
+
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+        }
+
+        function drawDNAHelix(colors) {
+            const centerY = canvas.height / 2;
+            const amplitude = canvas.height * 0.3;
+            const freq = 4;
+            const points = 200;
+            const phase = animationFrame * 0.03 * currentAnimationSpeed;
+
+            if (currentGlowIntensity > 0) {
+                ctx.shadowBlur = currentGlowIntensity;
+                ctx.shadowColor = colors[0];
+            }
+
+            // Connecting rungs
+            for (let i = 0; i < points; i += 8) {
+                const x = (i / points) * canvas.width;
+                const t = (i / points) * Math.PI * 2 * freq + phase;
+                const dataIndex = Math.floor((i / points) * bufferLength);
+                const amp = (dataArray[dataIndex] / 255) * currentSensitivity;
+                const dy = Math.sin(t) * amplitude * amp;
+
+                ctx.beginPath();
+                ctx.moveTo(x, centerY + dy);
+                ctx.lineTo(x, centerY - dy);
+                ctx.strokeStyle = colors[2] || colors[0];
+                ctx.lineWidth = 1;
+                ctx.globalAlpha = 0.4;
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+
+            // Strand 1
+            ctx.beginPath();
+            for (let i = 0; i < points; i++) {
+                const x = (i / points) * canvas.width;
+                const t = (i / points) * Math.PI * 2 * freq + phase;
+                const dataIndex = Math.floor((i / points) * bufferLength);
+                const amp = (dataArray[dataIndex] / 255) * currentSensitivity;
+                const y = centerY + Math.sin(t) * amplitude * amp;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = colors[0];
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Strand 2 (180° offset)
+            ctx.beginPath();
+            for (let i = 0; i < points; i++) {
+                const x = (i / points) * canvas.width;
+                const t = (i / points) * Math.PI * 2 * freq + phase + Math.PI;
+                const dataIndex = Math.floor((i / points) * bufferLength);
+                const amp = (dataArray[dataIndex] / 255) * currentSensitivity;
+                const y = centerY + Math.sin(t) * amplitude * amp;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = colors[1];
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+        }
+
+        function drawTunnel(colors) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const rings = 14;
+
+            if (currentGlowIntensity > 0) {
+                ctx.shadowBlur = currentGlowIntensity;
+                ctx.shadowColor = colors[0];
+            }
+
+            for (let r = 0; r < rings; r++) {
+                const phase = ((animationFrame * currentAnimationSpeed * 0.012) + (r / rings)) % 1;
+                const dataIndex = Math.floor((r / rings) * bufferLength);
+                const amplitude = dataArray[dataIndex] / 255;
+                const scale = phase * (1 + amplitude * currentSensitivity * 0.3);
+
+                const w = canvas.width * scale;
+                const h = canvas.height * scale;
+
+                const colorIndex = r % colors.length;
+                ctx.strokeStyle = colors[colorIndex];
+                ctx.lineWidth = 2;
+                ctx.globalAlpha = Math.max(0, 1 - phase);
+                ctx.strokeRect(centerX - w / 2, centerY - h / 2, w, h);
+                ctx.globalAlpha = 1;
+            }
+
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+        }
+
+        function drawRadialDots(colors) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const baseRadius = Math.min(centerX, centerY) * 0.45;
+            const count = Math.min(currentBarCount, bufferLength);
+            const rotationOffset = animationFrame * currentAnimationSpeed * 0.008;
+
+            if (currentGlowIntensity > 0) {
+                ctx.shadowBlur = currentGlowIntensity;
+                ctx.shadowColor = colors[0];
+            }
+
+            for (let i = 0; i < count; i++) {
+                const dataIndex = Math.floor((i / count) * bufferLength);
+                const amplitude = dataArray[dataIndex];
+                const normalized = (amplitude / 255) * currentSensitivity;
+
+                const angle = (i / count) * Math.PI * 2 + rotationOffset;
+                const r = baseRadius + normalized * baseRadius * 0.9;
+                const x = centerX + Math.cos(angle) * r;
+                const y = centerY + Math.sin(angle) * r;
+                const dotSize = Math.max(2, 3 + normalized * 9);
+
+                const colorIndex = Math.floor((i / count) * colors.length);
+                ctx.beginPath();
+                ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+                ctx.fillStyle = colors[colorIndex];
+                ctx.fill();
+            }
+
             ctx.shadowBlur = 0;
             ctx.shadowColor = 'transparent';
         }

@@ -176,6 +176,10 @@ class AudioVisualizer {
             case 'circle': this.drawCircularBars(colors); break;
             case 'wave': this.drawWaveForm(colors); break;
             case 'spectrum': this.drawSpectrum(colors); break;
+            case 'particles': this.drawParticles(colors); break;
+            case 'dna': this.drawDNAHelix(colors); break;
+            case 'tunnel': this.drawTunnel(colors); break;
+            case 'dots': this.drawRadialDots(colors); break;
         }
 
         // Draw Overlays (Callback)
@@ -522,6 +526,162 @@ class AudioVisualizer {
             this.ctx.lineWidth = 2;
             this.ctx.stroke();
         }
+        this.ctx.shadowBlur = 0;
+    }
+
+    drawParticles(colors) {
+        const count = Math.min(this.settings.barCount, this.bufferLength);
+
+        if (this.settings.glowIntensity > 0) {
+            this.ctx.shadowBlur = this.settings.glowIntensity;
+            this.ctx.shadowColor = colors[0];
+        }
+
+        for (let i = 0; i < count; i++) {
+            const dataIndex = Math.floor((i / count) * this.bufferLength);
+            const amplitude = this.dataArray ? this.dataArray[dataIndex] : 0;
+            const normalized = (amplitude / 255) * this.settings.sensitivity;
+
+            const seed = i * 137.508;
+            const baseX = (Math.sin(seed) * 0.5 + 0.5) * this.canvas.width;
+            const speed = 0.3 + (i % 5) * 0.15;
+            const yPhase = (this.animationFrame * speed * 0.5 + seed) % this.canvas.height;
+            const x = baseX + Math.sin(this.animationFrame * 0.02 + seed) * 30 * normalized;
+            const y = this.canvas.height - yPhase;
+
+            const size = Math.max(2, 3 + normalized * 12);
+            const colorIndex = i % colors.length;
+
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, size, 0, Math.PI * 2);
+            this.ctx.fillStyle = colors[colorIndex];
+            this.ctx.fill();
+        }
+
+        this.ctx.shadowBlur = 0;
+    }
+
+    drawDNAHelix(colors) {
+        const centerY = this.canvas.height / 2;
+        const amplitude = this.canvas.height * 0.3;
+        const freq = 4;
+        const points = 200;
+        const phase = this.animationFrame * 0.03 * this.settings.animationSpeed;
+
+        if (this.settings.glowIntensity > 0) {
+            this.ctx.shadowBlur = this.settings.glowIntensity;
+            this.ctx.shadowColor = colors[0];
+        }
+
+        // Connecting rungs
+        for (let i = 0; i < points; i += 8) {
+            const x = (i / points) * this.canvas.width;
+            const t = (i / points) * Math.PI * 2 * freq + phase;
+            const dataIndex = Math.floor((i / points) * this.bufferLength);
+            const amp = this.dataArray ? (this.dataArray[dataIndex] / 255) * this.settings.sensitivity : 0.5;
+            const dy = Math.sin(t) * amplitude * amp;
+
+            this.ctx.beginPath();
+            this.ctx.moveTo(x, centerY + dy);
+            this.ctx.lineTo(x, centerY - dy);
+            this.ctx.strokeStyle = colors[2] || colors[0];
+            this.ctx.lineWidth = 1;
+            this.ctx.globalAlpha = 0.4;
+            this.ctx.stroke();
+            this.ctx.globalAlpha = 1;
+        }
+
+        // Strand 1
+        this.ctx.beginPath();
+        for (let i = 0; i < points; i++) {
+            const x = (i / points) * this.canvas.width;
+            const t = (i / points) * Math.PI * 2 * freq + phase;
+            const dataIndex = Math.floor((i / points) * this.bufferLength);
+            const amp = this.dataArray ? (this.dataArray[dataIndex] / 255) * this.settings.sensitivity : 0.5;
+            const y = centerY + Math.sin(t) * amplitude * amp;
+            if (i === 0) this.ctx.moveTo(x, y); else this.ctx.lineTo(x, y);
+        }
+        this.ctx.strokeStyle = colors[0];
+        this.ctx.lineWidth = 3;
+        this.ctx.stroke();
+
+        // Strand 2 (180° offset)
+        this.ctx.beginPath();
+        for (let i = 0; i < points; i++) {
+            const x = (i / points) * this.canvas.width;
+            const t = (i / points) * Math.PI * 2 * freq + phase + Math.PI;
+            const dataIndex = Math.floor((i / points) * this.bufferLength);
+            const amp = this.dataArray ? (this.dataArray[dataIndex] / 255) * this.settings.sensitivity : 0.5;
+            const y = centerY + Math.sin(t) * amplitude * amp;
+            if (i === 0) this.ctx.moveTo(x, y); else this.ctx.lineTo(x, y);
+        }
+        this.ctx.strokeStyle = colors[1];
+        this.ctx.lineWidth = 3;
+        this.ctx.stroke();
+
+        this.ctx.shadowBlur = 0;
+    }
+
+    drawTunnel(colors) {
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height / 2;
+        const rings = 14;
+
+        if (this.settings.glowIntensity > 0) {
+            this.ctx.shadowBlur = this.settings.glowIntensity;
+            this.ctx.shadowColor = colors[0];
+        }
+
+        for (let r = 0; r < rings; r++) {
+            const phase = ((this.animationFrame * this.settings.animationSpeed * 0.012) + (r / rings)) % 1;
+            const dataIndex = Math.floor((r / rings) * this.bufferLength);
+            const amplitude = this.dataArray ? this.dataArray[dataIndex] / 255 : 0;
+            const scale = phase * (1 + amplitude * this.settings.sensitivity * 0.3);
+
+            const w = this.canvas.width * scale;
+            const h = this.canvas.height * scale;
+
+            const colorIndex = r % colors.length;
+            this.ctx.strokeStyle = colors[colorIndex];
+            this.ctx.lineWidth = 2;
+            this.ctx.globalAlpha = Math.max(0, 1 - phase);
+            this.ctx.strokeRect(centerX - w / 2, centerY - h / 2, w, h);
+            this.ctx.globalAlpha = 1;
+        }
+
+        this.ctx.shadowBlur = 0;
+    }
+
+    drawRadialDots(colors) {
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height / 2;
+        const baseRadius = Math.min(centerX, centerY) * 0.45;
+        const count = Math.min(this.settings.barCount, this.bufferLength);
+        const rotationOffset = this.animationFrame * this.settings.animationSpeed * 0.008;
+
+        if (this.settings.glowIntensity > 0) {
+            this.ctx.shadowBlur = this.settings.glowIntensity;
+            this.ctx.shadowColor = colors[0];
+        }
+
+        for (let i = 0; i < count; i++) {
+            const dataIndex = Math.floor((i / count) * this.bufferLength);
+            const amplitude = this.dataArray ? this.dataArray[dataIndex] : 0;
+            const normalized = (amplitude / 255) * this.settings.sensitivity;
+
+            const angle = (i / count) * Math.PI * 2 + rotationOffset;
+            const r = baseRadius + normalized * baseRadius * 0.9;
+            const x = centerX + Math.cos(angle) * r;
+            const y = centerY + Math.sin(angle) * r;
+            const dotSize = Math.max(2, 3 + normalized * 9);
+
+            const colorIndex = Math.floor((i / count) * colors.length);
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+            this.ctx.fillStyle = colors[colorIndex];
+            this.ctx.fill();
+        }
+
         this.ctx.shadowBlur = 0;
     }
 }
