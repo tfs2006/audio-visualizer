@@ -285,47 +285,204 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+        /* ── Extra UI styles ── */
+        .tab-btn { transition: all 0.2s ease; border-bottom: 2px solid transparent; }
+        .tab-btn.active { border-bottom-color: #3b82f6; color: #fff; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+        .upload-zone {
+            border: 2px dashed rgba(255,255,255,0.15);
+            background: rgba(0,0,0,0.25);
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+        }
+        .upload-zone:hover { border-color: rgba(59,130,246,0.6); background: rgba(59,130,246,0.06); }
+        .upload-zone.has-file { border-color: rgba(34,197,94,0.5); background: rgba(34,197,94,0.05); }
+        .section-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(156,163,175,0.8);
+            margin-bottom: 0.5rem;
+        }
+        .control-row { display: flex; flex-direction: column; gap: 0.25rem; }
+        .control-row label { font-size: 0.75rem; color: #9ca3af; display: flex; justify-content: space-between; }
+        .control-row label span { color: #e5e7eb; font-weight: 600; }
+        .glass-select {
+            width: 100%;
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 0.5rem;
+            padding: 0.45rem 2.2rem 0.45rem 0.75rem;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+        .glass-select:focus { border-color: #3b82f6; outline: none; }
+        .rec-dot {
+            width: 10px; height: 10px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: pulse-dot 1.2s ease-in-out infinite;
+            box-shadow: 0 0 0 0 rgba(239,68,68,0.6);
+        }
+        @keyframes pulse-dot {
+            0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.6); }
+            70%  { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+            100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+        }
+        .canvas-glow {
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 0 30px rgba(59,130,246,0.18), 0 0 60px rgba(139,92,246,0.10);
+        }
+        .preset-btn {
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.05);
+            border-radius: 0.5rem;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #d1d5db;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .preset-btn:hover { background: rgba(59,130,246,0.2); border-color: rgba(59,130,246,0.5); color: #fff; }
+        .preset-btn.active { background: rgba(59,130,246,0.35); border-color: #3b82f6; color: #fff; }
+        .overlay-slot {
+            background: rgba(0,0,0,0.25);
+            border: 1px dashed rgba(255,255,255,0.12);
+            border-radius: 0.625rem;
+            padding: 0.75rem;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .overlay-slot:hover { border-color: rgba(59,130,246,0.4); }
+        .overlay-slot.filled { border-style: solid; border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.04); }
+        .text-overlay-card {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 0.75rem;
+            padding: 1rem;
+        }
+        .rec-btn-main {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 4px 20px rgba(22,163,74,0.35);
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.025em;
+            padding: 0.875rem 2.5rem;
+            border-radius: 0.75rem;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+        .rec-btn-main:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(22,163,74,0.45); }
+        .rec-btn-main:disabled { opacity: 0.4; cursor: not-allowed; }
+        .sec-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 0.625rem;
+            padding: 0.625rem 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #d1d5db;
+            cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+        .sec-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); color: #fff; }
+        .sec-btn.pause  { border-color: rgba(234,179,8,0.4); color: #fde047; }
+        .sec-btn.stop   { border-color: rgba(239,68,68,0.4); color: #f87171; }
+        .sec-btn.resume { border-color: rgba(34,197,94,0.4); color: #4ade80; }
+        .sec-btn.pause:hover  { background: rgba(234,179,8,0.12); }
+        .sec-btn.stop:hover   { background: rgba(239,68,68,0.12); }
+        .sec-btn.resume:hover { background: rgba(34,197,94,0.12); }
+        .download-item {
+            display: flex; align-items: center; gap: 0.625rem;
+            background: rgba(59,130,246,0.12);
+            border: 1px solid rgba(59,130,246,0.3);
+            border-radius: 0.625rem;
+            padding: 0.625rem 1rem;
+            color: #93c5fd;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-decoration: none;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        .download-item:hover { background: rgba(59,130,246,0.22); border-color: rgba(59,130,246,0.5); color: #bfdbfe; }
     </style>
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+<body class="text-white min-h-screen p-3 sm:p-6" style="background-color:#05050f; background-image: radial-gradient(circle at 10% 20%, rgba(59,130,246,0.12) 0%, transparent 45%), radial-gradient(circle at 90% 80%, rgba(139,92,246,0.12) 0%, transparent 45%);">
 
-    <div class="w-full max-w-4xl mx-auto">
-        <header class="text-center mb-4 sm:mb-8">
-            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white">Audio Visualizer Generator</h1>
-            <p class="mt-2 sm:mt-4 text-base sm:text-lg text-gray-400">Create multiple video clips from a single audio file.</p>
+    <div class="w-full max-w-5xl mx-auto">
+
+        <!-- ── Header ── -->
+        <header class="text-center mb-6 sm:mb-10 pt-2">
+            <div class="inline-flex items-center gap-2 mb-3 px-3 py-1 rounded-full text-xs font-semibold tracking-widest uppercase" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);color:#93c5fd;">
+                ✦ 4ourmedia
+            </div>
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight" style="background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Audio Visualizer</h1>
+            <p class="mt-3 text-sm sm:text-base" style="color:#6b7280;">Create stunning video clips from a single audio file</p>
         </header>
 
-        <main class="bg-gray-800 rounded-xl shadow-2xl p-4 sm:p-6 md:p-8">
-            <!-- File Uploads -->
-            <div class="grid grid-cols-1 gap-4 sm:gap-6 mb-6 sm:mb-8">
-                <div class="file-upload-box flex flex-col items-center justify-center bg-gray-700 p-4 sm:p-6 rounded-lg border-2 border-gray-600">
-                    <h2 class="text-lg sm:text-xl font-semibold mb-3">📸 Upload Background Image</h2>
-                    <input type="file" id="imageUpload" accept="image/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer touch-target" />
-                    <p id="imageFileName" class="text-xs text-gray-500 mt-2 h-4"></p>
+        <!-- ── Step 1: Uploads ── -->
+        <div class="mb-5 p-4 sm:p-6 rounded-2xl" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
+            <p class="section-label">① Upload Files</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Background -->
+                <label for="imageUpload" class="upload-zone flex flex-col items-center justify-center gap-2 p-5 cursor-pointer" id="imageUploadZone">
+                    <div class="text-3xl">🖼️</div>
+                    <div class="text-sm font-semibold text-white">Background Image / Video</div>
+                    <div class="text-xs" style="color:#6b7280;">JPG, PNG, GIF, MP4, WebM</div>
+                    <p id="imageFileName" class="text-xs font-medium mt-1 truncate max-w-full" style="color:#4ade80;min-height:1rem;"></p>
+                    <input type="file" id="imageUpload" accept="image/*,video/*" class="hidden" />
+                </label>
+                <!-- Audio -->
+                <label for="audioUpload" class="upload-zone flex flex-col items-center justify-center gap-2 p-5 cursor-pointer" id="audioUploadZone">
+                    <div class="text-3xl">🎵</div>
+                    <div class="text-sm font-semibold text-white">Audio File</div>
+                    <div class="text-xs" style="color:#6b7280;">MP3, WAV, AAC, OGG, FLAC</div>
+                    <p id="audioFileName" class="text-xs font-medium mt-1 truncate max-w-full" style="color:#4ade80;min-height:1rem;"></p>
+                    <input type="file" id="audioUpload" accept="audio/*" class="hidden" />
+                </label>
+            </div>
+        </div>
+
+        <!-- ── Step 2: Preview ── -->
+        <div class="mb-5 p-4 sm:p-5 rounded-2xl" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
+            <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                <p class="section-label mb-0">② Preview Canvas</p>
+                <div class="flex gap-2">
+                    <button id="previewBtn" class="sec-btn text-xs py-1.5 px-3">👁️ Preview</button>
+                    <button id="fullscreenBtn" class="sec-btn text-xs py-1.5 px-3">⛶ Fullscreen</button>
                 </div>
-                <div class="file-upload-box flex flex-col items-center justify-center bg-gray-700 p-4 sm:p-6 rounded-lg border-2 border-gray-600">
-                    <h2 class="text-lg sm:text-xl font-semibold mb-3">🎵 Upload Audio File</h2>
-                    <input type="file" id="audioUpload" accept="audio/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer touch-target" />
-                    <p id="audioFileName" class="text-xs text-gray-500 mt-2 h-4"></p>
-                </div>
+            </div>
+            <div class="canvas-glow rounded-xl overflow-hidden bg-black">
+                <canvas id="visualizerCanvas" width="1280" height="720" class="w-full h-auto block"></canvas>
+            </div>
+            <audio id="audioPlayer" controls class="w-full mt-3 rounded-lg touch-target" style="height:44px;"></audio>
+        </div>
+
+        <!-- ── Step 3: Settings Tabs ── -->
+        <div class="mb-5 rounded-2xl overflow-hidden" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
+            <!-- Tab Bar -->
+            <div class="flex border-b" style="border-color:rgba(255,255,255,0.07);">
+                <button class="tab-btn active flex-1 py-3 text-sm font-semibold text-gray-400" onclick="switchTab('visualizer',this)">🎨 Visualizer</button>
+                <button class="tab-btn flex-1 py-3 text-sm font-semibold text-gray-400" onclick="switchTab('export',this)">📤 Export</button>
+                <button class="tab-btn flex-1 py-3 text-sm font-semibold text-gray-400" onclick="switchTab('overlays',this)">🖼️ Overlays</button>
+                <button class="tab-btn flex-1 py-3 text-sm font-semibold text-gray-400" onclick="switchTab('text',this)">📝 Text</button>
             </div>
 
-            <!-- Preview -->
-            <div class="mb-6 sm:mb-8">
-                <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-center">🎬 Preview</h2>
-                <div class="bg-black rounded-lg overflow-hidden shadow-lg border-2 border-gray-700">
-                    <canvas id="visualizerCanvas" width="1280" height="720" class="w-full h-auto"></canvas>
-                </div>
-                <audio id="audioPlayer" controls class="w-full mt-4 rounded-lg touch-target"></audio>
-            </div>
-            
-            <!-- Visualizer Settings -->
-            <div class="bg-gray-700 p-4 sm:p-6 rounded-lg mb-6 sm:mb-8 border-2 border-gray-600">
-                <h2 class="text-lg sm:text-xl font-semibold mb-4">🎨 Visualizer Settings</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Bar Style</label>
-                        <select id="barStyle" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 touch-target">
+            <!-- ── Tab: Visualizer ── -->
+            <div id="tab-visualizer" class="tab-pane active p-4 sm:p-6">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+                    <div class="control-row">
+                        <label>Bar Style</label>
+                        <select id="barStyle" class="glass-select">
                             <option value="gradient">Gradient Bars</option>
                             <option value="solid">Solid Bars</option>
                             <option value="circle">Circular</option>
@@ -333,188 +490,202 @@
                             <option value="spectrum">Spectrum</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Sensitivity: <span id="sensitivityValue">1.5</span></label>
-                        <input type="range" id="sensitivity" min="0.5" max="3" step="0.1" value="1.5" class="w-full touch-target">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Color Theme</label>
-                        <select id="colorTheme" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 touch-target">
+                    <div class="control-row">
+                        <label>Color Theme</label>
+                        <select id="colorTheme" class="glass-select">
                             <option value="default">Blue-Purple-Pink</option>
-                            <option value="fire">Fire</option>
-                            <option value="ocean">Ocean</option>
-                            <option value="forest">Forest</option>
-                            <option value="sunset">Sunset</option>
-                            <option value="neon">Neon</option>
-                            <option value="rainbow">Rainbow</option>
+                            <option value="fire">🔥 Fire</option>
+                            <option value="ocean">🌊 Ocean</option>
+                            <option value="forest">🌿 Forest</option>
+                            <option value="sunset">🌅 Sunset</option>
+                            <option value="neon">⚡ Neon</option>
+                            <option value="rainbow">🌈 Rainbow</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Animation: <span id="animationSpeedValue">1.0</span>x</label>
-                        <input type="range" id="animationSpeed" min="0.2" max="3" step="0.1" value="1.0" class="w-full touch-target">
-                    </div>
-                </div>
-                
-                <!-- Advanced Visualizer Settings Row -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-600">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Position</label>
-                        <select id="visualizerPosition" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 touch-target">
+                    <div class="control-row">
+                        <label>Position</label>
+                        <select id="visualizerPosition" class="glass-select">
                             <option value="bottom">Bottom</option>
                             <option value="center">Center</option>
                             <option value="top">Top</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Bar Count: <span id="barCountValue">64</span></label>
-                        <input type="range" id="barCount" min="16" max="128" step="8" value="64" class="w-full touch-target">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Mirror Mode</label>
-                        <select id="mirrorMode" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 touch-target">
+                    <div class="control-row">
+                        <label>Mirror Mode</label>
+                        <select id="mirrorMode" class="glass-select">
                             <option value="none">None</option>
-                            <option value="horizontal">Horizontal (Left-Right)</option>
-                            <option value="vertical">Vertical (Up-Down)</option>
+                            <option value="horizontal">↔ Horizontal</option>
+                            <option value="vertical">↕ Vertical</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Glow Effect: <span id="glowIntensityValue">0</span></label>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="control-row">
+                        <label>Sensitivity <span id="sensitivityValue">1.5</span></label>
+                        <input type="range" id="sensitivity" min="0.5" max="3" step="0.1" value="1.5" class="w-full touch-target">
+                    </div>
+                    <div class="control-row">
+                        <label>Animation <span id="animationSpeedValue">1.0</span>×</label>
+                        <input type="range" id="animationSpeed" min="0.2" max="3" step="0.1" value="1.0" class="w-full touch-target">
+                    </div>
+                    <div class="control-row">
+                        <label>Bar Count <span id="barCountValue">64</span></label>
+                        <input type="range" id="barCount" min="16" max="128" step="8" value="64" class="w-full touch-target">
+                    </div>
+                    <div class="control-row">
+                        <label>Glow <span id="glowIntensityValue">0</span></label>
                         <input type="range" id="glowIntensity" min="0" max="30" step="2" value="0" class="w-full touch-target">
+                    </div>
+                    <div class="control-row sm:col-span-2">
+                        <label>Bass Shake <span id="bassShakeValue">0</span>%</label>
+                        <input type="range" id="bassShake" min="0" max="100" step="5" value="0" class="w-full touch-target">
                     </div>
                 </div>
             </div>
-            
-            <!-- Export Settings -->
-            <div class="export-options p-4 sm:p-6 rounded-lg mb-6 sm:mb-8">
-                <h2 class="text-lg sm:text-xl font-semibold mb-4">🎬 Export Settings</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Video Quality</label>
-                        <select id="videoQuality" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 touch-target">
-                            <option value="720p">720p HD (1280x720)</option>
-                            <option value="1080p">1080p Full HD (1920x1080)</option>
-                            <option value="4k">4K Ultra HD (3840x2160)</option>
+
+            <!-- ── Tab: Export ── -->
+            <div id="tab-export" class="tab-pane p-4 sm:p-6">
+                <p class="section-label">Quick Presets</p>
+                <div class="grid grid-cols-3 gap-3 mb-5">
+                    <button id="presetTikTok" class="preset-btn">
+                        <div class="text-xl mb-1">📱</div>
+                        <div>TikTok</div>
+                        <div class="text-xs opacity-60 mt-0.5">1080×1920</div>
+                    </button>
+                    <button id="presetInsta" class="preset-btn">
+                        <div class="text-xl mb-1">🟣</div>
+                        <div>Instagram</div>
+                        <div class="text-xs opacity-60 mt-0.5">1080×1080</div>
+                    </button>
+                    <button id="presetYoutube" class="preset-btn active">
+                        <div class="text-xl mb-1">▶️</div>
+                        <div>YouTube</div>
+                        <div class="text-xs opacity-60 mt-0.5">1920×1080</div>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="control-row">
+                        <label>Video Quality</label>
+                        <select id="videoQuality" class="glass-select">
+                            <option value="720p">720p HD</option>
+                            <option value="1080p">1080p Full HD</option>
+                            <option value="4k">4K Ultra HD</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Frame Rate</label>
-                        <select id="frameRate" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 touch-target">
-                            <option value="24">24 FPS (Cinematic)</option>
-                            <option value="30" selected>30 FPS (Standard)</option>
-                            <option value="60">60 FPS (Smooth)</option>
+                    <div class="control-row">
+                        <label>Frame Rate</label>
+                        <select id="frameRate" class="glass-select">
+                            <option value="24">24 FPS — Cinematic</option>
+                            <option value="30" selected>30 FPS — Standard</option>
+                            <option value="60">60 FPS — Smooth</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Export Format</label>
-                        <select id="exportFormat" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 touch-target">
+                    <div class="control-row">
+                        <label>Format</label>
+                        <select id="exportFormat" class="glass-select">
                             <option value="webm">WebM (Best Quality)</option>
                             <option value="mp4">MP4 (Compatible)</option>
                         </select>
                     </div>
                 </div>
             </div>
-            
-            <!-- Overlay Images -->
-            <div class="bg-gray-700 p-4 sm:p-6 rounded-lg mb-6 sm:mb-8 border-2 border-gray-600">
-                <h2 class="text-lg sm:text-xl font-semibold mb-4">🖼️ Overlay Images (Optional)</h2>
-                <p class="text-sm text-gray-400 mb-4">Add up to 5 overlay images that will appear on top of your visualizer. You can drag and resize them in the preview.</p>
-                
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-4">
-                    <div class="overlay-item p-3 sm:p-4 rounded-lg text-center">
-                        <h3 class="text-sm font-medium mb-2">Overlay 1</h3>
-                        <input type="file" id="overlay1Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2 touch-target" />
-                        <p id="overlay1Name" class="text-xs text-gray-500 h-4 mb-2 truncate"></p>
-                        <div class="overlay-controls flex-col gap-1">
-                            <label class="text-xs">Size: <span id="overlay1SizeValue">50</span>%</label>
-                            <input type="range" id="overlay1Size" min="10" max="200" value="50" class="w-full text-xs touch-target">
-                            <label class="text-xs">Opacity: <span id="overlay1OpacityValue">80</span>%</label>
-                            <input type="range" id="overlay1Opacity" min="0" max="100" value="80" class="w-full text-xs touch-target">
-                            <button id="overlay1Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1 touch-target">Remove</button>
+
+            <!-- ── Tab: Overlays ── -->
+            <div id="tab-overlays" class="tab-pane p-4 sm:p-6">
+                <p class="text-xs mb-4" style="color:#6b7280;">Add up to 5 images on top of the visualizer. Drag them in the preview to reposition.</p>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                    <!-- Overlay slots generated via loop for DRY HTML -->
+                    <div class="overlay-slot" id="overlaySlot1">
+                        <div class="text-lg mb-1 opacity-40">＋</div>
+                        <div class="text-xs font-semibold text-gray-400 mb-2">Overlay 1</div>
+                        <input type="file" id="overlay1Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-1 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-600 file:text-white cursor-pointer mb-2 touch-target" />
+                        <p id="overlay1Name" class="text-xs truncate mb-2" style="color:#4ade80;min-height:1rem;"></p>
+                        <div class="overlay-controls flex-col gap-1 text-xs">
+                            <label class="flex justify-between text-gray-400">Size <span id="overlay1SizeValue">50</span>%</label>
+                            <input type="range" id="overlay1Size" min="10" max="200" value="50" class="w-full touch-target">
+                            <label class="flex justify-between text-gray-400 mt-1">Opacity <span id="overlay1OpacityValue">80</span>%</label>
+                            <input type="range" id="overlay1Opacity" min="0" max="100" value="80" class="w-full touch-target">
+                            <button id="overlay1Remove" class="mt-2 w-full text-xs font-semibold py-1 rounded" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;">✕ Remove</button>
                         </div>
                     </div>
-                    
-                    <div class="overlay-item p-3 sm:p-4 rounded-lg text-center">
-                        <h3 class="text-sm font-medium mb-2">Overlay 2</h3>
-                        <input type="file" id="overlay2Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2 touch-target" />
-                        <p id="overlay2Name" class="text-xs text-gray-500 h-4 mb-2 truncate"></p>
-                        <div class="overlay-controls flex-col gap-1">
-                            <label class="text-xs">Size: <span id="overlay2SizeValue">50</span>%</label>
-                            <input type="range" id="overlay2Size" min="10" max="200" value="50" class="w-full text-xs touch-target">
-                            <label class="text-xs">Opacity: <span id="overlay2OpacityValue">80</span>%</label>
-                            <input type="range" id="overlay2Opacity" min="0" max="100" value="80" class="w-full text-xs touch-target">
-                            <button id="overlay2Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1 touch-target">Remove</button>
+                    <div class="overlay-slot" id="overlaySlot2">
+                        <div class="text-lg mb-1 opacity-40">＋</div>
+                        <div class="text-xs font-semibold text-gray-400 mb-2">Overlay 2</div>
+                        <input type="file" id="overlay2Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-1 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-600 file:text-white cursor-pointer mb-2 touch-target" />
+                        <p id="overlay2Name" class="text-xs truncate mb-2" style="color:#4ade80;min-height:1rem;"></p>
+                        <div class="overlay-controls flex-col gap-1 text-xs">
+                            <label class="flex justify-between text-gray-400">Size <span id="overlay2SizeValue">50</span>%</label>
+                            <input type="range" id="overlay2Size" min="10" max="200" value="50" class="w-full touch-target">
+                            <label class="flex justify-between text-gray-400 mt-1">Opacity <span id="overlay2OpacityValue">80</span>%</label>
+                            <input type="range" id="overlay2Opacity" min="0" max="100" value="80" class="w-full touch-target">
+                            <button id="overlay2Remove" class="mt-2 w-full text-xs font-semibold py-1 rounded" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;">✕ Remove</button>
                         </div>
                     </div>
-                    
-                    <div class="overlay-item p-3 sm:p-4 rounded-lg text-center">
-                        <h3 class="text-sm font-medium mb-2">Overlay 3</h3>
-                        <input type="file" id="overlay3Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2 touch-target" />
-                        <p id="overlay3Name" class="text-xs text-gray-500 h-4 mb-2 truncate"></p>
-                        <div class="overlay-controls flex-col gap-1">
-                            <label class="text-xs">Size: <span id="overlay3SizeValue">50</span>%</label>
-                            <input type="range" id="overlay3Size" min="10" max="200" value="50" class="w-full text-xs touch-target">
-                            <label class="text-xs">Opacity: <span id="overlay3OpacityValue">80</span>%</label>
-                            <input type="range" id="overlay3Opacity" min="0" max="100" value="80" class="w-full text-xs touch-target">
-                            <button id="overlay3Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1 touch-target">Remove</button>
+                    <div class="overlay-slot" id="overlaySlot3">
+                        <div class="text-lg mb-1 opacity-40">＋</div>
+                        <div class="text-xs font-semibold text-gray-400 mb-2">Overlay 3</div>
+                        <input type="file" id="overlay3Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-1 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-600 file:text-white cursor-pointer mb-2 touch-target" />
+                        <p id="overlay3Name" class="text-xs truncate mb-2" style="color:#4ade80;min-height:1rem;"></p>
+                        <div class="overlay-controls flex-col gap-1 text-xs">
+                            <label class="flex justify-between text-gray-400">Size <span id="overlay3SizeValue">50</span>%</label>
+                            <input type="range" id="overlay3Size" min="10" max="200" value="50" class="w-full touch-target">
+                            <label class="flex justify-between text-gray-400 mt-1">Opacity <span id="overlay3OpacityValue">80</span>%</label>
+                            <input type="range" id="overlay3Opacity" min="0" max="100" value="80" class="w-full touch-target">
+                            <button id="overlay3Remove" class="mt-2 w-full text-xs font-semibold py-1 rounded" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;">✕ Remove</button>
                         </div>
                     </div>
-                    
-                    <div class="overlay-item p-3 sm:p-4 rounded-lg text-center">
-                        <h3 class="text-sm font-medium mb-2">Overlay 4</h3>
-                        <input type="file" id="overlay4Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2 touch-target" />
-                        <p id="overlay4Name" class="text-xs text-gray-500 h-4 mb-2 truncate"></p>
-                        <div class="overlay-controls flex-col gap-1">
-                            <label class="text-xs">Size: <span id="overlay4SizeValue">50</span>%</label>
-                            <input type="range" id="overlay4Size" min="10" max="200" value="50" class="w-full text-xs touch-target">
-                            <label class="text-xs">Opacity: <span id="overlay4OpacityValue">80</span>%</label>
-                            <input type="range" id="overlay4Opacity" min="0" max="100" value="80" class="w-full text-xs touch-target">
-                            <button id="overlay4Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1 touch-target">Remove</button>
+                    <div class="overlay-slot" id="overlaySlot4">
+                        <div class="text-lg mb-1 opacity-40">＋</div>
+                        <div class="text-xs font-semibold text-gray-400 mb-2">Overlay 4</div>
+                        <input type="file" id="overlay4Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-1 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-600 file:text-white cursor-pointer mb-2 touch-target" />
+                        <p id="overlay4Name" class="text-xs truncate mb-2" style="color:#4ade80;min-height:1rem;"></p>
+                        <div class="overlay-controls flex-col gap-1 text-xs">
+                            <label class="flex justify-between text-gray-400">Size <span id="overlay4SizeValue">50</span>%</label>
+                            <input type="range" id="overlay4Size" min="10" max="200" value="50" class="w-full touch-target">
+                            <label class="flex justify-between text-gray-400 mt-1">Opacity <span id="overlay4OpacityValue">80</span>%</label>
+                            <input type="range" id="overlay4Opacity" min="0" max="100" value="80" class="w-full touch-target">
+                            <button id="overlay4Remove" class="mt-2 w-full text-xs font-semibold py-1 rounded" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;">✕ Remove</button>
                         </div>
                     </div>
-                    
-                    <div class="overlay-item p-3 sm:p-4 rounded-lg text-center">
-                        <h3 class="text-sm font-medium mb-2">Overlay 5</h3>
-                        <input type="file" id="overlay5Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-500 file:text-white hover:file:bg-blue-600 cursor-pointer mb-2 touch-target" />
-                        <p id="overlay5Name" class="text-xs text-gray-500 h-4 mb-2 truncate"></p>
-                        <div class="overlay-controls flex-col gap-1">
-                            <label class="text-xs">Size: <span id="overlay5SizeValue">50</span>%</label>
-                            <input type="range" id="overlay5Size" min="10" max="200" value="50" class="w-full text-xs touch-target">
-                            <label class="text-xs">Opacity: <span id="overlay5OpacityValue">80</span>%</label>
-                            <input type="range" id="overlay5Opacity" min="0" max="100" value="80" class="w-full text-xs touch-target">
-                            <button id="overlay5Remove" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded mt-1 touch-target">Remove</button>
+                    <div class="overlay-slot" id="overlaySlot5">
+                        <div class="text-lg mb-1 opacity-40">＋</div>
+                        <div class="text-xs font-semibold text-gray-400 mb-2">Overlay 5</div>
+                        <input type="file" id="overlay5Upload" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-1 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-600 file:text-white cursor-pointer mb-2 touch-target" />
+                        <p id="overlay5Name" class="text-xs truncate mb-2" style="color:#4ade80;min-height:1rem;"></p>
+                        <div class="overlay-controls flex-col gap-1 text-xs">
+                            <label class="flex justify-between text-gray-400">Size <span id="overlay5SizeValue">50</span>%</label>
+                            <input type="range" id="overlay5Size" min="10" max="200" value="50" class="w-full touch-target">
+                            <label class="flex justify-between text-gray-400 mt-1">Opacity <span id="overlay5OpacityValue">80</span>%</label>
+                            <input type="range" id="overlay5Opacity" min="0" max="100" value="80" class="w-full touch-target">
+                            <button id="overlay5Remove" class="mt-2 w-full text-xs font-semibold py-1 rounded" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;">✕ Remove</button>
                         </div>
                     </div>
                 </div>
-                
-                <div class="text-center">
-                    <p class="text-xs text-gray-400">💡 Tip: Click and drag overlay images in the preview to reposition them</p>
-                </div>
+                <p class="text-xs mt-3 text-center" style="color:#4b5563;">💡 Drag overlays in the preview to reposition</p>
             </div>
-            
-            <!-- Text Overlays -->
-            <div class="bg-gray-700 p-4 sm:p-6 rounded-lg mb-6 sm:mb-8 border-2 border-gray-600">
-                <h2 class="text-lg sm:text-xl font-semibold mb-4">📝 Text Overlays</h2>
-                <p class="text-sm text-gray-400 mb-4">Add text like song title, artist name, or custom messages. Drag text in the preview to reposition.</p>
-                
+
+            <!-- ── Tab: Text ── -->
+            <div id="tab-text" class="tab-pane p-4 sm:p-6">
+                <p class="text-xs mb-4" style="color:#6b7280;">Add song title, artist name, or any custom text. Drag in the preview to reposition.</p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Text Overlay 1 -->
-                    <div class="bg-gray-600 p-4 rounded-lg">
-                        <h3 class="text-sm font-medium mb-3">Text 1 (e.g., Song Title)</h3>
-                        <input type="text" id="text1Content" placeholder="Enter text..." class="w-full bg-gray-800 text-white border border-gray-500 rounded px-3 py-2 mb-2 text-sm" maxlength="100">
-                        <div class="grid grid-cols-2 gap-2 mb-2">
-                            <div>
-                                <label class="text-xs text-gray-400">Font Size</label>
+                    <!-- Text 1 -->
+                    <div class="text-overlay-card">
+                        <p class="text-xs font-semibold mb-3" style="color:#93c5fd;">Text 1 — e.g. Song Title</p>
+                        <input type="text" id="text1Content" placeholder="Enter text..." class="w-full rounded-lg px-3 py-2 mb-3 text-sm text-white" style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);" maxlength="100">
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div class="control-row">
+                                <label>Size</label>
                                 <input type="range" id="text1Size" min="12" max="72" value="32" class="w-full touch-target">
                             </div>
-                            <div>
-                                <label class="text-xs text-gray-400">Color</label>
-                                <input type="color" id="text1Color" value="#ffffff" class="w-full h-8 rounded cursor-pointer">
+                            <div class="control-row">
+                                <label>Color</label>
+                                <input type="color" id="text1Color" value="#ffffff" class="w-full h-9 rounded-lg cursor-pointer mt-1" style="background:transparent;border:1px solid rgba(255,255,255,0.15);">
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="text-xs text-gray-400">Font</label>
-                                <select id="text1Font" class="w-full bg-gray-800 text-white border border-gray-500 rounded px-2 py-1 text-xs">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="control-row">
+                                <label>Font</label>
+                                <select id="text1Font" class="glass-select text-xs">
                                     <option value="Inter">Inter</option>
                                     <option value="Arial">Arial</option>
                                     <option value="Georgia">Georgia</option>
@@ -522,9 +693,9 @@
                                     <option value="Impact">Impact</option>
                                 </select>
                             </div>
-                            <div>
-                                <label class="text-xs text-gray-400">Style</label>
-                                <select id="text1Style" class="w-full bg-gray-800 text-white border border-gray-500 rounded px-2 py-1 text-xs">
+                            <div class="control-row">
+                                <label>Style</label>
+                                <select id="text1Style" class="glass-select text-xs">
                                     <option value="normal">Normal</option>
                                     <option value="bold">Bold</option>
                                     <option value="italic">Italic</option>
@@ -532,30 +703,28 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="mt-2">
-                            <label class="text-xs text-gray-400">Shadow</label>
-                            <input type="checkbox" id="text1Shadow" checked class="ml-2">
-                        </div>
+                        <label class="flex items-center gap-2 mt-3 text-xs" style="color:#9ca3af;">
+                            <input type="checkbox" id="text1Shadow" checked class="rounded"> Drop Shadow
+                        </label>
                     </div>
-                    
-                    <!-- Text Overlay 2 -->
-                    <div class="bg-gray-600 p-4 rounded-lg">
-                        <h3 class="text-sm font-medium mb-3">Text 2 (e.g., Artist Name)</h3>
-                        <input type="text" id="text2Content" placeholder="Enter text..." class="w-full bg-gray-800 text-white border border-gray-500 rounded px-3 py-2 mb-2 text-sm" maxlength="100">
-                        <div class="grid grid-cols-2 gap-2 mb-2">
-                            <div>
-                                <label class="text-xs text-gray-400">Font Size</label>
+                    <!-- Text 2 -->
+                    <div class="text-overlay-card">
+                        <p class="text-xs font-semibold mb-3" style="color:#c4b5fd;">Text 2 — e.g. Artist Name</p>
+                        <input type="text" id="text2Content" placeholder="Enter text..." class="w-full rounded-lg px-3 py-2 mb-3 text-sm text-white" style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);" maxlength="100">
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div class="control-row">
+                                <label>Size</label>
                                 <input type="range" id="text2Size" min="12" max="72" value="24" class="w-full touch-target">
                             </div>
-                            <div>
-                                <label class="text-xs text-gray-400">Color</label>
-                                <input type="color" id="text2Color" value="#cccccc" class="w-full h-8 rounded cursor-pointer">
+                            <div class="control-row">
+                                <label>Color</label>
+                                <input type="color" id="text2Color" value="#cccccc" class="w-full h-9 rounded-lg cursor-pointer mt-1" style="background:transparent;border:1px solid rgba(255,255,255,0.15);">
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="text-xs text-gray-400">Font</label>
-                                <select id="text2Font" class="w-full bg-gray-800 text-white border border-gray-500 rounded px-2 py-1 text-xs">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="control-row">
+                                <label>Font</label>
+                                <select id="text2Font" class="glass-select text-xs">
                                     <option value="Inter">Inter</option>
                                     <option value="Arial">Arial</option>
                                     <option value="Georgia">Georgia</option>
@@ -563,9 +732,9 @@
                                     <option value="Impact">Impact</option>
                                 </select>
                             </div>
-                            <div>
-                                <label class="text-xs text-gray-400">Style</label>
-                                <select id="text2Style" class="w-full bg-gray-800 text-white border border-gray-500 rounded px-2 py-1 text-xs">
+                            <div class="control-row">
+                                <label>Style</label>
+                                <select id="text2Style" class="glass-select text-xs">
                                     <option value="normal">Normal</option>
                                     <option value="bold">Bold</option>
                                     <option value="italic">Italic</option>
@@ -573,72 +742,141 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="mt-2">
-                            <label class="text-xs text-gray-400">Shadow</label>
-                            <input type="checkbox" id="text2Shadow" checked class="ml-2">
+                        <label class="flex items-center gap-2 mt-3 text-xs" style="color:#9ca3af;">
+                            <input type="checkbox" id="text2Shadow" checked class="rounded"> Drop Shadow
+                        </label>
+                    </div>
+                </div>
+                <p class="text-xs mt-3 text-center" style="color:#4b5563;">💡 Drag text in the preview to reposition</p>
+            </div>
+        </div>
+
+        <!-- ── Step 4: Recording Controls ── -->
+        <div class="mb-5 p-4 sm:p-6 rounded-2xl" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
+            <p class="section-label">③ Record</p>
+
+            <!-- Main action row -->
+            <div id="controls" class="flex flex-wrap items-center justify-center gap-3 mb-4">
+                <button id="startBtn" class="rec-btn-main touch-target" disabled>🎬 Start Recording</button>
+                <button id="pauseBtn"  class="sec-btn pause  touch-target hidden">⏸ Pause</button>
+                <button id="resumeBtn" class="sec-btn resume touch-target hidden">▶ Resume</button>
+                <button id="stopBtn"   class="sec-btn stop   touch-target hidden">⏹ Stop</button>
+            </div>
+
+            <!-- Status message -->
+            <div class="flex items-center justify-center gap-2 min-h-6 mb-2">
+                <div id="recDot" class="rec-dot hidden"></div>
+                <div id="statusMessage" class="text-sm font-medium" style="color:#fde68a;"></div>
+            </div>
+
+            <!-- Progress bar -->
+            <div id="progressContainer" class="hidden mt-3 p-3 rounded-xl" style="background:rgba(0,0,0,0.25);border:1px solid rgba(59,130,246,0.2);">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-semibold" style="color:#93c5fd;">Recording in Progress</span>
+                    <span id="recordingTime" class="text-xs font-mono font-bold" style="color:#60a5fa;">00:00</span>
+                </div>
+                <div class="w-full rounded-full overflow-hidden" style="background:rgba(255,255,255,0.07);height:6px;">
+                    <div id="progressBar" class="progress-bar h-full rounded-full" style="width:0%;"></div>
+                </div>
+                <div class="text-xs text-center mt-1.5" style="color:#6b7280;"><span id="progressText">Initializing...</span></div>
+            </div>
+
+            <!-- Keyboard shortcuts -->
+            <div class="mt-3 text-center">
+                <button id="shortcutsToggle" class="text-xs underline" style="color:#4b5563;">⌨️ Keyboard Shortcuts</button>
+                <div id="shortcutsHelp" class="hidden mt-2 p-3 rounded-xl inline-block text-xs" style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);color:#9ca3af;">
+                    <div class="grid grid-cols-2 gap-x-6 gap-y-1 text-left">
+                        <span><kbd class="px-1.5 py-0.5 rounded text-xs" style="background:rgba(255,255,255,0.1);">Space</kbd> Play/Pause</span>
+                        <span><kbd class="px-1.5 py-0.5 rounded text-xs" style="background:rgba(255,255,255,0.1);">R</kbd> Start/Resume</span>
+                        <span><kbd class="px-1.5 py-0.5 rounded text-xs" style="background:rgba(255,255,255,0.1);">P</kbd> Pause</span>
+                        <span><kbd class="px-1.5 py-0.5 rounded text-xs" style="background:rgba(255,255,255,0.1);">S</kbd> Stop</span>
+                        <span><kbd class="px-1.5 py-0.5 rounded text-xs" style="background:rgba(255,255,255,0.1);">V</kbd> Preview Mode</span>
+                        <span><kbd class="px-1.5 py-0.5 rounded text-xs" style="background:rgba(255,255,255,0.1);">F</kbd> Fullscreen</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Downloads ── -->
+        <div id="downloadContainer" class="flex flex-col gap-2 mb-5"></div>
+
+        <!-- ── Support Banner ── -->
+        <div class="mb-3 mt-2 rounded-2xl overflow-hidden" style="background:linear-gradient(135deg,rgba(139,92,246,0.12) 0%,rgba(236,72,153,0.12) 100%);border:1px solid rgba(139,92,246,0.25);">
+            <div class="p-6 sm:p-8">
+                <!-- Top row: icon + headline -->
+                <div class="flex flex-col sm:flex-row items-center gap-5">
+                    <!-- Pulse icon -->
+                    <div class="relative flex-shrink-0">
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);box-shadow:0 0 30px rgba(139,92,246,0.45);">🎧</div>
+                        <div class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-green-400" style="box-shadow:0 0 8px rgba(74,222,128,0.8);animation:pulse-dot 1.8s ease-in-out infinite;"></div>
+                    </div>
+                    <!-- Text -->
+                    <div class="text-center sm:text-left flex-1">
+                        <h2 class="text-xl sm:text-2xl font-bold text-white mb-1">This tool is 100% free &amp; ad-free</h2>
+                        <p class="text-sm" style="color:#a78bfa;">Built and maintained by one person. Your support keeps it alive and growing.</p>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="my-5" style="border-top:1px solid rgba(255,255,255,0.07);"></div>
+
+                <!-- Value bullets -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 text-sm">
+                    <div class="flex items-start gap-2.5 p-3 rounded-xl" style="background:rgba(0,0,0,0.2);">
+                        <span class="text-lg mt-0.5">🚫</span>
+                        <div>
+                            <div class="font-semibold text-white text-xs">No Ads. Ever.</div>
+                            <div class="text-xs mt-0.5" style="color:#6b7280;">No pop-ups or tracking</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-2.5 p-3 rounded-xl" style="background:rgba(0,0,0,0.2);">
+                        <span class="text-lg mt-0.5">⚡</span>
+                        <div>
+                            <div class="font-semibold text-white text-xs">Always Improving</div>
+                            <div class="text-xs mt-0.5" style="color:#6b7280;">New features added regularly</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-2.5 p-3 rounded-xl" style="background:rgba(0,0,0,0.2);">
+                        <span class="text-lg mt-0.5">🔒</span>
+                        <div>
+                            <div class="font-semibold text-white text-xs">Private by Design</div>
+                            <div class="text-xs mt-0.5" style="color:#6b7280;">Your files never leave your device</div>
                         </div>
                     </div>
                 </div>
-                
-                <div class="text-center mt-3">
-                    <p class="text-xs text-gray-400">💡 Tip: Click and drag text in the preview to reposition</p>
-                </div>
-            </div>
 
-            <!-- Action Buttons -->
-            <div id="controls" class="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
-                <button id="startBtn" class="btn bg-green-600 hover:bg-green-700 touch-target" disabled>🎬 Start Recording</button>
-                <button id="pauseBtn" class="btn bg-yellow-500 hover:bg-yellow-600 touch-target hidden">⏸️ Pause</button>
-                <button id="resumeBtn" class="btn bg-green-600 hover:bg-green-700 touch-target hidden">▶️ Resume</button>
-                <button id="stopBtn" class="btn bg-red-600 hover:bg-red-700 touch-target hidden">⏹️ Stop</button>
-                <button id="previewBtn" class="btn bg-purple-600 hover:bg-purple-700 touch-target">👁️ Preview Mode</button>
-                <button id="fullscreenBtn" class="btn bg-indigo-600 hover:bg-indigo-700 touch-target">🔍 Fullscreen</button>
-            </div>
-            
-            <!-- Keyboard Shortcuts Help -->
-            <div class="mt-4 text-center">
-                <button id="shortcutsToggle" class="text-xs text-gray-400 hover:text-gray-300 underline">⌨️ Keyboard Shortcuts</button>
-                <div id="shortcutsHelp" class="hidden mt-2 p-3 bg-gray-700 rounded-lg text-xs text-gray-300 inline-block">
-                    <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-left">
-                        <span><kbd class="bg-gray-600 px-1 rounded">Space</kbd> Play/Pause audio</span>
-                        <span><kbd class="bg-gray-600 px-1 rounded">R</kbd> Start/Resume recording</span>
-                        <span><kbd class="bg-gray-600 px-1 rounded">P</kbd> Pause recording</span>
-                        <span><kbd class="bg-gray-600 px-1 rounded">S</kbd> Stop recording</span>
-                        <span><kbd class="bg-gray-600 px-1 rounded">V</kbd> Toggle preview mode</span>
-                        <span><kbd class="bg-gray-600 px-1 rounded">F</kbd> Toggle fullscreen</span>
-                        <span><kbd class="bg-gray-600 px-1 rounded">Esc</kbd> Exit fullscreen/Stop</span>
-                    </div>
+                <!-- CTA -->
+                <div class="flex flex-col items-center gap-3">
+                    <a href="https://pay.4ourmedia.com/b/6oU5kD1SUgarczQ8C28bS0n" target="_blank" rel="noopener noreferrer"
+                       class="inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-base text-white transition-all duration-300"
+                       style="background:linear-gradient(135deg,#8b5cf6,#ec4899);box-shadow:0 6px 28px rgba(139,92,246,0.45);letter-spacing:0.01em;"
+                       onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 36px rgba(139,92,246,0.6)';"
+                       onmouseout="this.style.transform='';this.style.boxShadow='0 6px 28px rgba(139,92,246,0.45)';">
+                        <span style="font-size:1.25rem;">💜</span>
+                        Support This Project — Pay What You Want
+                        <span style="font-size:1rem;opacity:0.8;">→</span>
+                    </a>
+                    <p class="text-xs" style="color:#4b5563;">Secure payment via Stripe &nbsp;·&nbsp; Any amount helps &nbsp;·&nbsp; One-time, no subscription</p>
                 </div>
             </div>
-            
-            <!-- Progress Bar -->
-            <div id="progressContainer" class="progress-container hidden mt-6 p-4 rounded-lg">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-sm font-medium">Recording Progress</span>
-                    <span id="recordingTime" class="text-sm text-blue-400">00:00</span>
-                </div>
-                <div class="w-full bg-gray-700 rounded-full h-2 mb-2">
-                    <div id="progressBar" class="progress-bar h-2 rounded-full" style="width: 0%"></div>
-                </div>
-                <div class="text-xs text-gray-400 text-center">
-                    <span id="progressText">Initializing...</span>
-                </div>
-            </div>
-            
-            <!-- Status & Downloads -->
-            <div class="text-center mt-6">
-                <div id="statusMessage" class="text-yellow-400 h-6 mb-4"></div>
-                <div id="downloadContainer" class="flex flex-col items-center gap-3"></div>
-            </div>
-
-        </main>
-
-        <!-- Donation -->
-        <div class="text-center mt-6">
-            <p class="text-sm text-gray-400 mb-2">Find this tool useful?</p>
-            <a href="https://buy.stripe.com/7sY8wPfJKcYf9nE9G68bS0l" target="_blank" rel="noopener noreferrer" class="inline-block bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105">☕ Buy Us a Coffee</a>
         </div>
+
+        <!-- ── Footer ── -->
+        <div class="text-center pb-8 pt-2">
+            <p class="text-xs" style="color:#1f2937;">© 2026 4ourmedia &nbsp;·&nbsp; Made with 💜 for creators</p>
+        </div>
+
     </div>
+
+    <!-- Tab switching -->
+    <script>
+        function switchTab(name, btn) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            btn.classList.add('active');
+        }
+    </script>
 
     <script>
         // DOM Element References
@@ -688,6 +926,7 @@
         let currentBarCount = 64;
         let currentMirrorMode = 'none';
         let currentGlowIntensity = 0;
+        let currentBassShake = 0;
         let isPreviewMode = false;
         let startTime = null;
         let animationFrame = 0;
@@ -801,6 +1040,11 @@
                         document.getElementById('glowIntensity').value = settings.glowIntensity;
                         document.getElementById('glowIntensityValue').textContent = settings.glowIntensity;
                     }
+                    if (settings.bassShake !== undefined) {
+                        currentBassShake = settings.bassShake;
+                        document.getElementById('bassShake').value = settings.bassShake;
+                        document.getElementById('bassShakeValue').textContent = settings.bassShake;
+                    }
                     
                     // Apply export settings
                     if (settings.videoQuality) videoQuality.value = settings.videoQuality;
@@ -912,6 +1156,11 @@
             saveSettings();
             drawInitialState();
         });
+        document.getElementById('bassShake').addEventListener('input', (e) => {
+            currentBassShake = parseInt(e.target.value);
+            document.getElementById('bassShakeValue').textContent = e.target.value;
+            saveSettings();
+        });
         
         previewBtn.addEventListener('click', togglePreviewMode);
         fullscreenBtn.addEventListener('click', toggleFullscreen);
@@ -923,6 +1172,21 @@
             saveSettings();
         });
         exportFormat.addEventListener('change', saveSettings);
+
+        // Aspect ratio presets
+        function setPreset(width, height, activeId) {
+            canvas.width = width;
+            canvas.height = height;
+            backgroundNeedsUpdate = true;
+            drawInitialState();
+            saveSettings();
+            ['presetTikTok','presetInsta','presetYoutube'].forEach(id => {
+                document.getElementById(id).classList.toggle('active', id === activeId);
+            });
+        }
+        document.getElementById('presetTikTok').addEventListener('click', () => setPreset(1080, 1920, 'presetTikTok'));
+        document.getElementById('presetInsta').addEventListener('click',  () => setPreset(1080, 1080, 'presetInsta'));
+        document.getElementById('presetYoutube').addEventListener('click',() => setPreset(1920, 1080, 'presetYoutube'));
         
         // Shortcuts toggle
         document.getElementById('shortcutsToggle').addEventListener('click', () => {
@@ -1019,6 +1283,7 @@
             const file = e.target.files[0];
             if (file) {
                 imageFileName.textContent = file.name;
+                document.getElementById('imageUploadZone').classList.add('has-file');
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     backgroundImage = new Image();
@@ -1271,6 +1536,7 @@
             const file = e.target.files[0];
             if (file) {
                 audioFileName.textContent = file.name;
+                document.getElementById('audioUploadZone').classList.add('has-file');
                 // Revoke previous object URL to prevent memory leak
                 if (audioSrc) {
                     URL.revokeObjectURL(audioSrc);
@@ -1291,8 +1557,8 @@
                 // Reset preview mode if active to prevent play listener spawning extra draw loops
                 if (isPreviewMode) {
                     isPreviewMode = false;
-                    previewBtn.textContent = '\ud83d\udc41\ufe0f Preview Mode';
-                    previewBtn.className = 'btn bg-purple-600 hover:bg-purple-700 touch-target';
+                    previewBtn.textContent = '\ud83d\udc41\ufe0f Preview';
+                    previewBtn.className = 'sec-btn';
                 }
                 
                 appState = 'recording';
@@ -1386,7 +1652,7 @@
             isPreviewMode = !isPreviewMode;
             if (isPreviewMode) {
                 previewBtn.textContent = '🎬 Record Mode';
-                previewBtn.className = 'btn bg-green-600 hover:bg-green-700 touch-target';
+                previewBtn.className = 'sec-btn';
                 
                 // Setup audio analysis for preview if not already done
                 if (!audioContext && audioSrc) {
@@ -1400,8 +1666,8 @@
                 
                 statusMessage.textContent = 'Preview mode active. Play audio to see visualization.';
             } else {
-                previewBtn.textContent = '👁️ Preview Mode';
-                previewBtn.className = 'btn bg-purple-600 hover:bg-purple-700 touch-target';
+                previewBtn.textContent = '👁️ Preview';
+                previewBtn.className = 'sec-btn';
                 cancelAnimationFrame(animationFrameId);
                 drawInitialState();
                 statusMessage.textContent = backgroundImage && audioSrc ? 'Ready to start recording.' : '';
@@ -1688,6 +1954,9 @@
             pauseBtn.classList.toggle('hidden', appState !== 'recording');
             resumeBtn.classList.toggle('hidden', appState !== 'paused');
             stopBtn.classList.toggle('hidden', appState === 'idle');
+            // Show pulsing recording dot
+            const dot = document.getElementById('recDot');
+            if (dot) dot.classList.toggle('hidden', appState !== 'recording');
         }
 
         function drawInitialState() {
@@ -1818,7 +2087,7 @@
                 downloadLink.href = videoUrl;
                 downloadLink.download = `visualizer-clip-${clipCounter}-${quality}.${format}`;
                 downloadLink.textContent = `📥 Download Clip ${clipCounter} (${quality.toUpperCase()}, ${format.toUpperCase()})`;
-                downloadLink.className = 'btn bg-blue-600 hover:bg-blue-700';
+                downloadLink.className = 'download-item';
                 downloadContainer.appendChild(downloadLink);
 
                 if (appState === 'paused') {
@@ -1869,6 +2138,22 @@
             if (backgroundNeedsUpdate || !cachedBackground) {
                 updateCachedBackground();
             }
+
+            // Bass Shake: zoom canvas from center on bass hits
+            ctx.save();
+            if (currentBassShake > 0) {
+                const bassBins = Math.floor(bufferLength * 0.1);
+                let bassSum = 0;
+                for (let i = 0; i < bassBins; i++) bassSum += dataArray[i];
+                const bassAvg = bassSum / bassBins;
+                if (bassAvg > 100) {
+                    const shakeFactor = ((bassAvg - 100) / 155) * (currentBassShake / 100) * 0.08;
+                    const scale = 1 + shakeFactor;
+                    ctx.translate(canvas.width / 2, canvas.height / 2);
+                    ctx.scale(scale, scale);
+                    ctx.translate(-canvas.width / 2, -canvas.height / 2);
+                }
+            }
             
             // Draw cached background
             if (cachedBackground) {
@@ -1900,6 +2185,7 @@
             
             // Draw overlays on top of the visualizer
             drawOverlayImages();
+            ctx.restore(); // Restore bass shake transform
         }
         
         // Draw only the background (no overlays)
