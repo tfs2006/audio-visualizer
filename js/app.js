@@ -98,7 +98,6 @@ function saveSettings() {
         position: visualizer.settings.position,
         barCount: visualizer.settings.barCount,
         mirrorMode: visualizer.settings.mirrorMode,
-        mirrorMode: visualizer.settings.mirrorMode,
         glowIntensity: visualizer.settings.glowIntensity,
         bassShake: visualizer.settings.bassShake,
         videoQuality: elements.videoQuality.value,

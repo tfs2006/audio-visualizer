@@ -1341,7 +1341,7 @@
             updateButtons();
         }
 
-        function handleResume() {
+        async function handleResume() {
             if (appState !== 'paused') return;
             appState = 'recording';
             clipCounter++;
@@ -1353,6 +1353,9 @@
             // Restart progress timer for the new clip
             startTime = Date.now();
             updateProgress();
+
+            // A stopped MediaRecorder cannot be restarted — must recreate it
+            await setupAudioApi();
 
             mediaRecorder.start();
             audioPlayer.play();
@@ -1673,7 +1676,8 @@
         });
 
         function checkFilesReady() {
-            if (backgroundImage && audioSrc) {
+            // Background image is optional — only require audio to enable recording
+            if (audioSrc) {
                 startBtn.disabled = false;
                 statusMessage.textContent = 'Ready to start recording.';
             }
